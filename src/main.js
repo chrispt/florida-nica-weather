@@ -4,26 +4,40 @@
 
 import store from './state/store.js';
 import { RACES } from './config/raceSchedule.js';
-import { fetchRaceWeather } from './api/openMeteo.js';
+import { fetchRaceWeather, fetchNowcast } from './api/openMeteo.js';
+import { fetchNWSAlerts, filterAlertsForRaceWindow } from './api/nwsAlerts.js';
+import { fetchClimatePrecipNormal } from './api/openMeteoClimate.js';
 import { assessRaceRisk } from './config/riskAssessment.js';
-import { findNextRace, isRaceDay, getRemainingRaces } from './utils/dateUtils.js';
+import { findNextRace, isRaceDay, getRemainingRaces, daysUntilRace } from './utils/dateUtils.js';
 import { formatRelativeTime } from './utils/formatting.js';
 import { renderHero, destroyHero } from './ui/heroView.js';
 import { renderRiskBanner } from './ui/riskBanner.js';
 import { renderWeatherDetails } from './ui/weatherDetailView.js';
 import { renderHourlyTimeline } from './ui/hourlyTimeline.js';
 import { renderAllRaces } from './ui/allRacesView.js';
-import { REFRESH_INTERVAL_NORMAL, REFRESH_INTERVAL_RACEDAY } from './config/constants.js';
+import { renderAlertsBanner } from './ui/alertsBanner.js';
+import { renderDecisionTimeline } from './ui/decisionTimeline.js';
+import { renderShareButton, updateURLHash, readRaceFromURL } from './ui/shareStatus.js';
+import { renderNotificationBell, addRecentTransition } from './ui/notificationBell.js';
+import {
+    initNotifications, checkForRiskTransitions,
+    sendRiskNotification, shouldNotify,
+    getPreviousRiskLevels, savePreviousRiskLevels
+} from './notifications/notificationManager.js';
+import { REFRESH_INTERVAL_NORMAL, REFRESH_INTERVAL_RACEDAY, NOWCAST_PROXIMITY_DAYS } from './config/constants.js';
 
 // DOM containers
 const heroContainer = document.getElementById('hero');
 const riskContainer = document.getElementById('risk-banner');
+const alertsContainer = document.getElementById('nws-alerts');
+const timelineContainer = document.getElementById('decision-timeline');
 const weatherContainer = document.getElementById('weather-details');
-const timelineContainer = document.getElementById('hourly-timeline');
+const hourlyContainer = document.getElementById('hourly-timeline');
 const allRacesContainer = document.getElementById('all-races');
 const lastUpdateEl = document.getElementById('last-update');
 const errorContainer = document.getElementById('error-container');
 const refreshBtn = document.getElementById('refresh-btn');
+const notifBellContainer = document.getElementById('notification-bell');
 
 let refreshTimer = null;
 
@@ -31,14 +45,24 @@ let refreshTimer = null;
  * Initialize the app
  */
 async function init() {
+    // Check URL hash for deep-linked race
+    const hashRaceId = readRaceFromURL();
+
     // Find the next race and set it as active
-    const nextRace = findNextRace();
-    if (nextRace) {
-        store.set('activeRaceId', nextRace.id);
+    if (hashRaceId) {
+        store.set('activeRaceId', hashRaceId);
     } else {
-        // Season over — show last race
-        store.set('activeRaceId', RACES[RACES.length - 1].id);
+        const nextRace = findNextRace();
+        if (nextRace) {
+            store.set('activeRaceId', nextRace.id);
+        } else {
+            store.set('activeRaceId', RACES[RACES.length - 1].id);
+        }
     }
+
+    // Initialize notifications
+    initNotifications();
+    renderNotificationBell(notifBellContainer);
 
     // Wire up refresh button
     refreshBtn?.addEventListener('click', () => fetchAllWeatherData());
@@ -64,29 +88,114 @@ async function fetchAllWeatherData() {
 
     try {
         const racesToFetch = getRelevantRaces();
+
+        // Parallel-fetch weather, NWS alerts, climate normals, and nowcast per race
         const results = await Promise.allSettled(
-            racesToFetch.map(race => fetchRaceWeather(race.lat, race.lon).then(result => ({ race, result })))
+            racesToFetch.map(async (race) => {
+                const days = daysUntilRace(race);
+
+                // Fetch weather + alerts in parallel
+                const fetches = [
+                    fetchRaceWeather(race.lat, race.lon),
+                    fetchNWSAlerts(race.lat, race.lon),
+                    fetchClimatePrecipNormal(race.lat, race.lon, race.dates.start)
+                ];
+
+                // Conditionally fetch nowcast for nearby races
+                if (days >= 0 && days <= NOWCAST_PROXIMITY_DAYS) {
+                    fetches.push(fetchNowcast(race.lat, race.lon));
+                }
+
+                const [weatherResult, alertsResult, climateResult, nowcastResult] = await Promise.allSettled(fetches);
+
+                return { race, weatherResult, alertsResult, climateResult, nowcastResult };
+            })
         );
 
         const weatherData = { ...store.get('weatherData') };
         const riskData = { ...store.get('riskData') };
+        const alertsData = { ...store.get('alertsData') };
+        const nowcastData = { ...store.get('nowcastData') };
 
         for (const settled of results) {
-            if (settled.status === 'fulfilled') {
-                const { race, result } = settled.value;
+            if (settled.status !== 'fulfilled') continue;
+            const { race, weatherResult, alertsResult, climateResult, nowcastResult } = settled.value;
+
+            // Weather data
+            if (weatherResult.status === 'fulfilled') {
+                const result = weatherResult.value;
                 if (result.data) {
                     weatherData[race.id] = result.data;
-                    riskData[race.id] = assessRaceRisk(result.data, race);
                 } else if (result.error) {
                     console.error(`Weather fetch failed for ${race.name}:`, result.error.message);
                 }
             }
+
+            // NWS alerts
+            if (alertsResult.status === 'fulfilled') {
+                alertsData[race.id] = alertsResult.value;
+            }
+
+            // Climate normals
+            let climateDeparture = null;
+            if (climateResult?.status === 'fulfilled') {
+                const climate = climateResult.value;
+                if (climate.normalPrecip7d != null && weatherData[race.id]) {
+                    // Calculate departure: actual past 7d rain - normal
+                    const raceDate = new Date(race.dates.start + 'T00:00:00');
+                    const sevenDaysBefore = new Date(raceDate);
+                    sevenDaysBefore.setDate(sevenDaysBefore.getDate() - 7);
+                    const pastRain = weatherData[race.id].hourly
+                        .filter(h => h.time >= sevenDaysBefore && h.time < raceDate)
+                        .reduce((sum, h) => sum + (h.precipitation || 0), 0);
+                    climateDeparture = Math.round(pastRain) - climate.normalPrecip7d;
+                }
+            }
+
+            // Nowcast
+            if (nowcastResult?.status === 'fulfilled') {
+                const result = nowcastResult.value;
+                if (result.data) {
+                    nowcastData[race.id] = result.data;
+                }
+            }
+
+            // Risk assessment with alerts and climate context
+            if (weatherData[race.id]) {
+                const alerts = alertsData[race.id]
+                    ? filterAlertsForRaceWindow(alertsData[race.id].alerts, race.dates.start, race.dates.end, race.raceHours)
+                    : [];
+                riskData[race.id] = assessRaceRisk(weatherData[race.id], race, alerts, climateDeparture);
+            }
         }
 
-        store.update({ weatherData, riskData, lastFetchTime: new Date(), isLoading: false });
+        // Check for risk transitions before updating
+        const previousLevels = getPreviousRiskLevels();
+        const transitions = checkForRiskTransitions(riskData, previousLevels);
+        const prefs = store.get('notificationPrefs');
+
+        for (const t of transitions) {
+            const race = RACES.find(r => r.id == t.raceId);
+            const raceName = race ? race.name : `Race ${t.raceId}`;
+            addRecentTransition(t, raceName);
+
+            if (shouldNotify(t, prefs)) {
+                sendRiskNotification(t, raceName);
+            }
+        }
+
+        // Save current levels for next comparison
+        const currentLevels = {};
+        for (const [raceId, risk] of Object.entries(riskData)) {
+            currentLevels[raceId] = risk.level;
+        }
+        savePreviousRiskLevels(currentLevels);
+
+        store.update({ weatherData, riskData, alertsData, nowcastData, lastFetchTime: new Date(), isLoading: false });
         updateLastFetchDisplay();
         renderActiveRace();
         renderAllRaces(allRacesContainer, handleRaceClick);
+        renderNotificationBell(notifBellContainer);
 
     } catch (err) {
         console.error('Failed to fetch weather data:', err);
@@ -121,12 +230,28 @@ function renderActiveRace() {
 
     const weatherData = store.get('weatherData')[race.id];
     const riskData = store.get('riskData')[race.id];
+    const alertsDataForRace = store.get('alertsData')[race.id];
+    const nowcastData = store.get('nowcastData')[race.id];
+
+    // Calculate climate departure for display
+    let climateDeparture = null;
+    if (riskData && riskData.trailDamageDetails) {
+        climateDeparture = riskData.trailDamageDetails.climateDeparture;
+    }
+
+    // Update URL hash
+    updateURLHash(race.id);
 
     destroyHero();
     renderHero(heroContainer, race);
     renderRiskBanner(riskContainer, riskData, race);
-    renderWeatherDetails(weatherContainer, weatherData, race);
-    renderHourlyTimeline(timelineContainer, weatherData, race);
+    renderAlertsBanner(alertsContainer, alertsDataForRace);
+    renderDecisionTimeline(timelineContainer, race, riskData, weatherData);
+    renderWeatherDetails(weatherContainer, weatherData, race, nowcastData, climateDeparture);
+    renderHourlyTimeline(hourlyContainer, weatherData, race);
+
+    // Share button in the risk banner header area
+    renderShareButton(riskContainer, race, riskData, weatherData);
 }
 
 /**

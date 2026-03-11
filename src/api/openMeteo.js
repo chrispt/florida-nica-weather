@@ -36,6 +36,49 @@ export async function fetchRaceWeather(lat, lon) {
 }
 
 /**
+ * Fetch 15-minute precipitation nowcast (next 2 hours)
+ * @param {number} lat
+ * @param {number} lon
+ * @returns {Promise<{data: object|null, error: Error|null}>}
+ */
+export async function fetchNowcast(lat, lon) {
+    const params = new URLSearchParams({
+        latitude: lat.toFixed(4),
+        longitude: lon.toFixed(4),
+        minutely_15: 'precipitation',
+        forecast_hours: 2,
+        timezone: 'auto'
+    });
+
+    const url = `https://api.open-meteo.com/v1/forecast?${params.toString()}`;
+    const { data, error } = await fetchWithErrorHandling(url);
+
+    if (error) return { data: null, error };
+
+    if (!data.minutely_15 || !data.minutely_15.time) {
+        return { data: null, error: new Error('No nowcast data available') };
+    }
+
+    const intervals = data.minutely_15.time.map((time, i) => ({
+        time: new Date(time),
+        precipitation: data.minutely_15.precipitation?.[i] ?? 0
+    }));
+
+    // Compute trend from first half vs second half
+    const mid = Math.floor(intervals.length / 2);
+    const firstHalf = intervals.slice(0, mid).reduce((s, d) => s + d.precipitation, 0);
+    const secondHalf = intervals.slice(mid).reduce((s, d) => s + d.precipitation, 0);
+    const trend = secondHalf > firstHalf * 1.2 ? 'increasing'
+        : secondHalf < firstHalf * 0.8 ? 'decreasing'
+        : 'steady';
+
+    return {
+        data: { intervals, trend, fetchedAt: new Date() },
+        error: null
+    };
+}
+
+/**
  * Transform Open-Meteo response into race-weather format
  */
 function transformRaceWeatherData(apiData) {
@@ -56,7 +99,9 @@ function transformRaceWeatherData(apiData) {
         soilMoisture0to7: hourly.soil_moisture_0_to_7cm?.[i] ?? null,
         soilMoisture7to28: hourly.soil_moisture_7_to_28cm?.[i] ?? null,
         apparentTemperature: hourly.apparent_temperature?.[i] ?? null,
-        uvIndex: hourly.uv_index?.[i] ?? null
+        uvIndex: hourly.uv_index?.[i] ?? null,
+        cape: hourly.cape?.[i] ?? null,
+        liftedIndex: hourly.lifted_index?.[i] ?? null
     }));
 
     // Build daily array

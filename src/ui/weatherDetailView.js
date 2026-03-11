@@ -1,12 +1,15 @@
 /**
- * Weather detail widgets — rain history, soil moisture, wind, temp, race-day summary
+ * Weather detail widgets — rain history, soil moisture, wind, temp, race-day summary, heat safety, nowcast
  */
 
 import { formatTemperature, formatWindSpeed, getWindDirectionLabel, formatPrecipitation, formatSoilMoisture, formatPercent } from '../utils/formatting.js';
 import { getWeatherDescription, getWeatherIcon } from '../config/weatherCodes.js';
 import { TRAIL_THRESHOLDS, UV_THRESHOLDS, WEATHER_ICONS } from '../config/constants.js';
+import { renderHeatSafetyWidget } from './heatSafetyWidget.js';
+import { renderNowcastWidget } from './nowcastWidget.js';
+import { getRaceHourlyWindow } from '../config/riskAssessment.js';
 
-export function renderWeatherDetails(container, weatherData, race) {
+export function renderWeatherDetails(container, weatherData, race, nowcastData = null, climateDeparture = null) {
     if (!weatherData || !weatherData.hourly || weatherData.hourly.length === 0) {
         container.innerHTML = '<div class="loading"><div class="loading__spinner"></div><span>Loading weather data...</span></div>';
         return;
@@ -27,13 +30,24 @@ export function renderWeatherDetails(container, weatherData, race) {
     // Race-day daily summaries from daily data
     const raceDayCards = getRaceDayCards(weatherData, race);
 
+    // Race hourly data for heat widget
+    const raceHourlyData = getRaceHourlyWindow(weatherData, race);
+
+    // Nowcast widget (only if data available)
+    const nowcastHtml = nowcastData ? renderNowcastWidget(nowcastData) : '';
+
+    // Heat safety widget
+    const heatHtml = renderHeatSafetyWidget(raceHourlyData);
+
     container.innerHTML = `
         <div class="widget-grid">
+            ${nowcastHtml}
             ${renderRaceDaySummaryWidget(raceDayCards, race)}
             ${renderCurrentConditions(currentHour)}
-            ${renderRainfallWidget(rainHistory, weatherData, race)}
+            ${renderRainfallWidget(rainHistory, weatherData, race, climateDeparture)}
             ${renderSoilMoistureWidget(latestSoil)}
             ${renderWindWidget(currentHour, raceDaySummary)}
+            ${heatHtml}
         </div>`;
 }
 
@@ -105,7 +119,7 @@ function renderCurrentConditions(hour) {
         </div>`;
 }
 
-function renderRainfallWidget(rainHistory, weatherData, race) {
+function renderRainfallWidget(rainHistory, weatherData, race, climateDeparture = null) {
     const maxRain = Math.max(...rainHistory.map(d => d.rain), 1);
 
     const bars = rainHistory.map(d => {
@@ -118,11 +132,22 @@ function renderRainfallWidget(rainHistory, weatherData, race) {
 
     const totalPast = rainHistory.filter(d => !d.isForecast).reduce((s, d) => s + d.rain, 0);
 
+    // Departure from normal annotation (Phase 6)
+    let departureHtml = '';
+    if (climateDeparture != null) {
+        const sign = climateDeparture >= 0 ? '+' : '';
+        const colorClass = climateDeparture > 50 ? 'rain-departure--above'
+            : climateDeparture < -20 ? 'rain-departure--below'
+            : 'rain-departure--normal';
+        departureHtml = `<div class="rain-departure ${colorClass}">${sign}${Math.round(climateDeparture)}mm vs 30-yr normal</div>`;
+    }
+
     return `
         <div class="widget">
             <div class="widget__title">7-Day Rainfall</div>
             <div class="widget__value">${formatPrecipitation(totalPast)}</div>
             <div class="widget__detail">Past 7 days cumulative</div>
+            ${departureHtml}
             <div class="rain-chart">${bars}</div>
             <div class="rain-chart__labels">
                 <span>7 days ago</span>

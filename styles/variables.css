@@ -52,4 +52,20 @@
     /* Transitions */
     --transition-fast: 150ms ease;
     --transition-normal: 250ms ease;
+
+    /* Alert severity colors */
+    --alert-warning: #ef4444;
+    --alert-watch: #f97316;
+    --alert-advisory: #eab308;
+
+    /* Heat safety colors */
+    --heat-green: #22c55e;
+    --heat-yellow: #eab308;
+    --heat-orange: #f97316;
+    --heat-red: #ef4444;
+
+    /* Decision timeline states */
+    --milestone-past: #64748b;
+    --milestone-active: #f97316;
+    --milestone-future: #334155;
 }

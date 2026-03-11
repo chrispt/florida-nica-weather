@@ -5,7 +5,7 @@
 
 import { formatTemperature, formatWindSpeed, formatPercent } from '../utils/formatting.js';
 import { getWeatherIcon } from '../config/weatherCodes.js';
-import { THUNDERSTORM_CODES, HEAVY_RAIN_CODES, WIND_THRESHOLDS } from '../config/constants.js';
+import { THUNDERSTORM_CODES, HEAVY_RAIN_CODES, WIND_THRESHOLDS, CAPE_THRESHOLDS } from '../config/constants.js';
 
 export function renderHourlyTimeline(container, weatherData, race) {
     if (!weatherData || !weatherData.hourly) {
@@ -102,6 +102,7 @@ function renderHourCell(hour, race) {
             <span class="timeline__hour-time">${timeStr}</span>
             <span class="timeline__hour-icon">${icon.icon}</span>
             <span class="timeline__hour-temp">${formatTemperature(hour.temperature)}</span>
+            ${hour.cape != null && hour.cape > CAPE_THRESHOLDS.HIGH ? `<span class="timeline__hour-cape" title="CAPE: ${Math.round(hour.cape)} J/kg">&#x26A1;</span>` : ''}
             ${precipStr ? `<span class="timeline__hour-precip">${precipStr}</span>` : ''}
             <span class="timeline__hour-wind">${formatWindSpeed(hour.windSpeed)}</span>
         </div>`;

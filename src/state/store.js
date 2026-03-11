@@ -12,8 +12,20 @@ const initialState = {
     // Weather data keyed by race ID: { [raceId]: { hourly, daily, raw, fetchedAt } }
     weatherData: {},
 
-    // Risk assessments keyed by race ID: { [raceId]: { lightning, trailDamage, wind, overall, level } }
+    // Risk assessments keyed by race ID: { [raceId]: { lightning, trailDamage, wind, heat, overall, level } }
     riskData: {},
+
+    // NWS alerts keyed by race ID: { [raceId]: { alerts: [], fetchedAt } }
+    alertsData: {},
+
+    // Precipitation nowcast keyed by race ID: { [raceId]: { intervals: [], trend, fetchedAt } }
+    nowcastData: {},
+
+    // Previous risk levels for notification transitions: { [raceId]: 'GREEN'|'YELLOW'|'RED' }
+    previousRiskLevels: {},
+
+    // Notification preferences: { enabled, transitions: [...] }
+    notificationPrefs: { enabled: false, transitions: ['toRed', 'toYellow', 'toGreen'] },
 
     // Timing
     lastFetchTime: null,

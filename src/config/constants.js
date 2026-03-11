@@ -4,6 +4,11 @@
 
 export const OPEN_METEO_BASE = 'https://api.open-meteo.com/v1/forecast';
 
+// NWS Alerts API
+export const NWS_ALERTS_BASE = 'https://api.weather.gov/alerts/active';
+export const NWS_USER_AGENT = '(FloridaNICAWeather, contact@floridamtb.org)';
+export const NWS_AUTO_RED_EVENTS = ['Tornado Warning', 'Severe Thunderstorm Warning'];
+
 // Hourly parameters including soil moisture for trail condition assessment
 export const HOURLY_PARAMS = [
     'temperature_2m',
@@ -17,7 +22,9 @@ export const HOURLY_PARAMS = [
     'soil_moisture_0_to_7cm',
     'soil_moisture_7_to_28cm',
     'apparent_temperature',
-    'uv_index'
+    'uv_index',
+    'cape',
+    'lifted_index'
 ].join(',');
 
 // Daily summary parameters
@@ -41,6 +48,23 @@ export const RISK_THRESHOLDS = {
     YELLOW_MAX: 60
     // Above 60 = RED
 };
+
+// CAPE thresholds (J/kg) for thunderstorm potential
+export const CAPE_THRESHOLDS = {
+    MODERATE: 1000,
+    HIGH: 2000,
+    EXTREME: 3500
+};
+
+// WBGT thresholds (°F) per NICA heat safety guidelines
+export const WBGT_THRESHOLDS = {
+    GREEN_MAX_F: 82,
+    YELLOW_MAX_F: 87,
+    ORANGE_MAX_F: 90
+};
+
+// Nowcast proximity threshold — only fetch for races within this many days
+export const NOWCAST_PROXIMITY_DAYS = 2;
 
 // Weather code classifications
 export const THUNDERSTORM_CODES = [95, 96, 99];
@@ -144,5 +168,7 @@ export const UV_THRESHOLDS = [
 // localStorage keys
 export const STORAGE_KEYS = {
     TEMP_UNIT: 'nicaWeather_tempUnit',
-    SPEED_UNIT: 'nicaWeather_speedUnit'
+    SPEED_UNIT: 'nicaWeather_speedUnit',
+    NOTIFICATION_PREFS: 'nicaWeather_notifPrefs',
+    PREVIOUS_RISK_LEVELS: 'nicaWeather_prevRiskLevels'
 };
