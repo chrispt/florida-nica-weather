@@ -16,48 +16,50 @@ import {
  * Lightning risk from thunderstorm codes + precip probability during race hours
  */
 export function scoreLightning(raceHourlyData) {
-    if (!raceHourlyData || raceHourlyData.length === 0) return 0;
+    const details = { thunderstormHours: 0, maxPrecipProb: 0, rainHours: 0 };
+    if (!raceHourlyData || raceHourlyData.length === 0) return { score: 0, details };
 
     let score = 0;
 
     // Check for thunderstorm weather codes during race hours
-    const thunderstormHours = raceHourlyData.filter(h =>
+    const thunderstormHoursList = raceHourlyData.filter(h =>
         THUNDERSTORM_CODES.includes(h.weatherCode)
     );
+    details.thunderstormHours = thunderstormHoursList.length;
 
-    if (thunderstormHours.length > 0) {
-        // Direct thunderstorm forecast is very high risk
-        score = Math.min(100, 60 + thunderstormHours.length * 10);
+    if (thunderstormHoursList.length > 0) {
+        score = Math.min(100, 60 + thunderstormHoursList.length * 10);
     }
 
     // Factor in high precip probability (proxy for storm likelihood)
     const maxPrecipProb = Math.max(...raceHourlyData.map(h => h.precipProbability || 0));
-    const avgPrecipProb = raceHourlyData.reduce((s, h) => s + (h.precipProbability || 0), 0) / raceHourlyData.length;
+    details.maxPrecipProb = maxPrecipProb;
 
-    // High precip probability in Florida often means thunderstorms
     if (maxPrecipProb > 70) {
         score = Math.max(score, 30 + (maxPrecipProb - 70));
     }
 
     // Any rain codes also raise lightning concern in FL summer pattern
-    const rainHours = raceHourlyData.filter(h =>
+    const rainHoursList = raceHourlyData.filter(h =>
         [...RAIN_CODES, ...THUNDERSTORM_CODES].includes(h.weatherCode)
     );
-    if (rainHours.length >= 3) {
-        score = Math.max(score, 25 + rainHours.length * 5);
+    details.rainHours = rainHoursList.length;
+
+    if (rainHoursList.length >= 3) {
+        score = Math.max(score, 25 + rainHoursList.length * 5);
     }
 
-    return Math.min(100, Math.round(score));
+    return { score: Math.min(100, Math.round(score)), details };
 }
 
 /**
  * Trail damage risk from cumulative rain, soil moisture, and forecast rain
  */
 export function scoreTrailDamage(weatherData, raceDateStr) {
-    if (!weatherData || !weatherData.hourly) return 0;
+    const details = { pastRain7d: 0, avgSoilMoisture: 0, raceDayRain: 0, maxHourlyRain: 0 };
+    if (!weatherData || !weatherData.hourly) return { score: 0, details };
 
     const raceDate = new Date(raceDateStr + 'T00:00:00');
-    const now = new Date();
 
     let score = 0;
 
@@ -68,6 +70,7 @@ export function scoreTrailDamage(weatherData, raceDateStr) {
     const pastRain = weatherData.hourly
         .filter(h => h.time >= sevenDaysBefore && h.time < raceDate)
         .reduce((sum, h) => sum + (h.precipitation || 0), 0);
+    details.pastRain7d = Math.round(pastRain);
 
     if (pastRain > TRAIL_THRESHOLDS.RAIN_7DAY_CRITICAL_MM) {
         score += 50;
@@ -79,10 +82,11 @@ export function scoreTrailDamage(weatherData, raceDateStr) {
     // 2. Soil moisture levels (most recent available before race)
     const soilReadings = weatherData.hourly
         .filter(h => h.time <= raceDate && h.soilMoisture0to7 !== null)
-        .slice(-24); // Last 24 hours of readings
+        .slice(-24);
 
     if (soilReadings.length > 0) {
         const avgSoilMoisture = soilReadings.reduce((s, h) => s + h.soilMoisture0to7, 0) / soilReadings.length;
+        details.avgSoilMoisture = avgSoilMoisture;
 
         if (avgSoilMoisture > TRAIL_THRESHOLDS.SOIL_MOISTURE_CRITICAL) {
             score += 40;
@@ -99,6 +103,7 @@ export function scoreTrailDamage(weatherData, raceDateStr) {
             return hDate === raceDateStr;
         })
         .reduce((sum, h) => sum + (h.precipitation || 0), 0);
+    details.raceDayRain = Math.round(raceDayRain);
 
     if (raceDayRain > 20) {
         score += 30;
@@ -116,24 +121,28 @@ export function scoreTrailDamage(weatherData, raceDateStr) {
             .map(h => h.precipitation || 0),
         0
     );
+    details.maxHourlyRain = Math.round(maxHourlyRain);
 
     if (maxHourlyRain > TRAIL_THRESHOLDS.RAIN_INTENSITY_HIGH_MM) {
         score += 15;
     }
 
-    return Math.min(100, Math.round(score));
+    return { score: Math.min(100, Math.round(score)), details };
 }
 
 /**
  * Wind risk from sustained speeds and gusts
  */
 export function scoreWind(raceHourlyData) {
-    if (!raceHourlyData || raceHourlyData.length === 0) return 0;
+    const details = { maxSustained: 0, maxGust: 0 };
+    if (!raceHourlyData || raceHourlyData.length === 0) return { score: 0, details };
 
     let score = 0;
 
     const maxWind = Math.max(...raceHourlyData.map(h => h.windSpeed || 0));
     const maxGust = Math.max(...raceHourlyData.map(h => h.windGusts || 0));
+    details.maxSustained = Math.round(maxWind);
+    details.maxGust = Math.round(maxGust);
 
     // Sustained wind scoring
     if (maxWind > WIND_THRESHOLDS.WARNING_KMH) {
@@ -150,7 +159,7 @@ export function scoreWind(raceHourlyData) {
         score += 15;
     }
 
-    return Math.min(100, Math.round(score));
+    return { score: Math.min(100, Math.round(score)), details };
 }
 
 /**
@@ -199,19 +208,35 @@ export function getRiskSummary(level, lightning, trailDamage, wind) {
  */
 export function assessRaceRisk(weatherData, race) {
     if (!weatherData || !weatherData.hourly) {
-        return { lightning: 0, trailDamage: 0, wind: 0, overall: 0, level: 'GREEN', summary: 'No weather data available' };
+        return {
+            lightning: 0, trailDamage: 0, wind: 0, overall: 0, level: 'GREEN',
+            summary: 'No weather data available',
+            lightningDetails: { thunderstormHours: 0, maxPrecipProb: 0, rainHours: 0 },
+            trailDamageDetails: { pastRain7d: 0, avgSoilMoisture: 0, raceDayRain: 0, maxHourlyRain: 0 },
+            windDetails: { maxSustained: 0, maxGust: 0 }
+        };
     }
 
     // Get hourly data for race day(s) during race hours
     const raceHourlyData = getRaceHourlyWindow(weatherData, race);
 
-    const lightning = scoreLightning(raceHourlyData);
-    const trailDamage = scoreTrailDamage(weatherData, race.dates.start);
-    const wind = scoreWind(raceHourlyData);
+    const lightningResult = scoreLightning(raceHourlyData);
+    const trailResult = scoreTrailDamage(weatherData, race.dates.start);
+    const windResult = scoreWind(raceHourlyData);
+
+    const lightning = lightningResult.score;
+    const trailDamage = trailResult.score;
+    const wind = windResult.score;
+
     const { overall, level } = computeOverallRisk(lightning, trailDamage, wind);
     const summary = getRiskSummary(level, lightning, trailDamage, wind);
 
-    return { lightning, trailDamage, wind, overall, level, summary };
+    return {
+        lightning, trailDamage, wind, overall, level, summary,
+        lightningDetails: lightningResult.details,
+        trailDamageDetails: trailResult.details,
+        windDetails: windResult.details
+    };
 }
 
 /**

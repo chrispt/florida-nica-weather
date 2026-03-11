@@ -22,7 +22,8 @@ export const RACES = [
             end: '2026-02-01'
         },
         // Typical race hours (local time) — used for hourly risk windows
-        raceHours: { start: 8, end: 16 }
+        raceHours: { start: 8, end: 16 },
+        nwsRadarUrl: 'https://radar.weather.gov/?settings=v1_eyJhZ2VuZGEiOnsiaWQiOiJsb2NhbCIsImNlbnRlciI6Wy04MS42MDg5LDI2LjcxNTZdLCJ6b29tIjo4LCJmaWx0ZXIiOiJXU1ItODhEIiwibGF5ZXIiOiJicmVmX3JhdyIsInN0YXRpb24iOiJLVEJXIiwidHJhbnNwYXJlbnQiOnRydWUsImFsZXJ0c092ZXJsYXkiOnRydWUsInN0YXRpb25JY29uc092ZXJsYXkiOnRydWV9LCJiYXNlIjoic3RhbmRhcmQiLCJjb3VudHkiOmZhbHNlLCJjd2EiOmZhbHNlLCJzdGF0ZSI6ZmFsc2UsIm1lbnUiOnRydWUsInNob3J0RnVzZWRPbmx5Ijp0cnVlfQ==#/'
     },
     {
         id: 2,
@@ -36,7 +37,8 @@ export const RACES = [
             start: '2026-02-21',
             end: '2026-02-22'
         },
-        raceHours: { start: 8, end: 16 }
+        raceHours: { start: 8, end: 16 },
+        nwsRadarUrl: 'https://radar.weather.gov/?settings=v1_eyJhZ2VuZGEiOnsiaWQiOiJsb2NhbCIsImNlbnRlciI6Wy04Mi4wODUzLDI5LjEwOTRdLCJ6b29tIjo4LCJmaWx0ZXIiOiJXU1ItODhEIiwibGF5ZXIiOiJicmVmX3JhdyIsInN0YXRpb24iOiJLSkFYIiwidHJhbnNwYXJlbnQiOnRydWUsImFsZXJ0c092ZXJsYXkiOnRydWUsInN0YXRpb25JY29uc092ZXJsYXkiOnRydWV9LCJiYXNlIjoic3RhbmRhcmQiLCJjb3VudHkiOmZhbHNlLCJjd2EiOmZhbHNlLCJzdGF0ZSI6ZmFsc2UsIm1lbnUiOnRydWUsInNob3J0RnVzZWRPbmx5Ijp0cnVlfQ==#/'
     },
     {
         id: 3,
@@ -50,7 +52,8 @@ export const RACES = [
             start: '2026-03-14',
             end: '2026-03-15'
         },
-        raceHours: { start: 8, end: 16 }
+        raceHours: { start: 8, end: 16 },
+        nwsRadarUrl: 'https://radar.weather.gov/?settings=v1_eyJhZ2VuZGEiOnsiaWQiOiJsb2NhbCIsImNlbnRlciI6Wy04MC4xODM0LDI2Ljc0ODVdLCJ6b29tIjo4LCJmaWx0ZXIiOiJXU1ItODhEIiwibGF5ZXIiOiJicmVmX3JhdyIsInN0YXRpb24iOiJLQU1YIiwidHJhbnNwYXJlbnQiOnRydWUsImFsZXJ0c092ZXJsYXkiOnRydWUsInN0YXRpb25JY29uc092ZXJsYXkiOnRydWV9LCJiYXNlIjoic3RhbmRhcmQiLCJjb3VudHkiOmZhbHNlLCJjd2EiOmZhbHNlLCJzdGF0ZSI6ZmFsc2UsIm1lbnUiOnRydWUsInNob3J0RnVzZWRPbmx5Ijp0cnVlfQ==#/'
     },
     {
         id: 4,
@@ -64,7 +67,8 @@ export const RACES = [
             start: '2026-03-28',
             end: '2026-03-29'
         },
-        raceHours: { start: 8, end: 16 }
+        raceHours: { start: 8, end: 16 },
+        nwsRadarUrl: 'https://radar.weather.gov/?settings=v1_eyJhZ2VuZGEiOnsiaWQiOiJsb2NhbCIsImNlbnRlciI6Wy04MS45NzE0LDI3Ljg5NTNdLCJ6b29tIjo4LCJmaWx0ZXIiOiJXU1ItODhEIiwibGF5ZXIiOiJicmVmX3JhdyIsInN0YXRpb24iOiJLVEJXIiwidHJhbnNwYXJlbnQiOnRydWUsImFsZXJ0c092ZXJsYXkiOnRydWUsInN0YXRpb25JY29uc092ZXJsYXkiOnRydWV9LCJiYXNlIjoic3RhbmRhcmQiLCJjb3VudHkiOmZhbHNlLCJjd2EiOmZhbHNlLCJzdGF0ZSI6ZmFsc2UsIm1lbnUiOnRydWUsInNob3J0RnVzZWRPbmx5Ijp0cnVlfQ==#/'
     },
     {
         id: 5,
@@ -78,7 +82,8 @@ export const RACES = [
             start: '2026-04-11',
             end: '2026-04-12'
         },
-        raceHours: { start: 8, end: 16 }
+        raceHours: { start: 8, end: 16 },
+        nwsRadarUrl: 'https://radar.weather.gov/?settings=v1_eyJhZ2VuZGEiOnsiaWQiOiJsb2NhbCIsImNlbnRlciI6Wy04NC4xODM4LDMwLjQwNzRdLCJ6b29tIjo4LCJmaWx0ZXIiOiJXU1ItODhEIiwibGF5ZXIiOiJicmVmX3JhdyIsInN0YXRpb24iOiJLVExIIiwidHJhbnNwYXJlbnQiOnRydWUsImFsZXJ0c092ZXJsYXkiOnRydWUsInN0YXRpb25JY29uc092ZXJsYXkiOnRydWV9LCJiYXNlIjoic3RhbmRhcmQiLCJjb3VudHkiOmZhbHNlLCJjd2EiOmZhbHNlLCJzdGF0ZSI6ZmFsc2UsIm1lbnUiOnRydWUsInNob3J0RnVzZWRPbmx5Ijp0cnVlfQ==#/'
     },
     {
         id: 6,
@@ -93,6 +98,7 @@ export const RACES = [
             start: '2026-04-25',
             end: '2026-04-25'
         },
-        raceHours: { start: 8, end: 16 }
+        raceHours: { start: 8, end: 16 },
+        nwsRadarUrl: 'https://radar.weather.gov/?settings=v1_eyJhZ2VuZGEiOnsiaWQiOiJsb2NhbCIsImNlbnRlciI6Wy04Mi40NTgyLDI5LjcyMTFdLCJ6b29tIjo4LCJmaWx0ZXIiOiJXU1ItODhEIiwibGF5ZXIiOiJicmVmX3JhdyIsInN0YXRpb24iOiJLSkFYIiwidHJhbnNwYXJlbnQiOnRydWUsImFsZXJ0c092ZXJsYXkiOnRydWUsInN0YXRpb25JY29uc092ZXJsYXkiOnRydWV9LCJiYXNlIjoic3RhbmRhcmQiLCJjb3VudHkiOmZhbHNlLCJjd2EiOmZhbHNlLCJzdGF0ZSI6ZmFsc2UsIm1lbnUiOnRydWUsInNob3J0RnVzZWRPbmx5Ijp0cnVlfQ==#/'
     }
 ];

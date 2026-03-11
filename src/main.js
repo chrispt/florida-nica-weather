@@ -124,7 +124,7 @@ function renderActiveRace() {
 
     destroyHero();
     renderHero(heroContainer, race);
-    renderRiskBanner(riskContainer, riskData);
+    renderRiskBanner(riskContainer, riskData, race);
     renderWeatherDetails(weatherContainer, weatherData, race);
     renderHourlyTimeline(timelineContainer, weatherData, race);
 }

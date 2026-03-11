@@ -2,9 +2,11 @@
  * Risk banner — color-coded overall risk with expandable factor details
  */
 
-import { RISK_THRESHOLDS } from '../config/constants.js';
+import { RISK_THRESHOLDS, TRAIL_THRESHOLDS } from '../config/constants.js';
+import { getForecastConfidence } from '../utils/dateUtils.js';
+import { convertWindSpeed, formatWindSpeed } from '../utils/formatting.js';
 
-export function renderRiskBanner(container, risk) {
+export function renderRiskBanner(container, risk, race) {
     if (!risk || risk.overall === undefined) {
         container.innerHTML = `
             <div class="risk-banner risk-banner--GREEN">
@@ -16,7 +18,10 @@ export function renderRiskBanner(container, risk) {
         return;
     }
 
-    const { level, overall, summary, lightning, trailDamage, wind } = risk;
+    const { level, overall, summary, lightning, trailDamage, wind,
+        lightningDetails, trailDamageDetails, windDetails } = risk;
+
+    const confidence = race ? getForecastConfidence(race) : null;
 
     container.innerHTML = `
         <div class="risk-banner risk-banner--${level}" id="risk-banner-toggle">
@@ -25,11 +30,12 @@ export function renderRiskBanner(container, risk) {
                 <span class="risk-banner__score">${overall}</span>
             </div>
             <div class="risk-banner__summary">${summary}</div>
+            ${confidence ? `<div class="confidence-tag confidence-tag--${confidence.level}">Forecast: ${confidence.label}${confidence.days > 0 ? ` (${confidence.days}-day)` : ''}</div>` : ''}
             <div class="risk-banner__details">
                 <div class="risk-banner__factors">
-                    ${renderFactor('Lightning', lightning)}
-                    ${renderFactor('Trail Damage', trailDamage)}
-                    ${renderFactor('Wind', wind)}
+                    ${renderFactor('Lightning', lightning, renderLightningBullets(lightningDetails))}
+                    ${renderFactor('Trail Damage', trailDamage, renderTrailBullets(trailDamageDetails))}
+                    ${renderFactor('Wind', wind, renderWindBullets(windDetails))}
                 </div>
             </div>
             <div class="risk-banner__expand-hint" id="expand-hint">Click for details</div>
@@ -44,7 +50,7 @@ export function renderRiskBanner(container, risk) {
     });
 }
 
-function renderFactor(label, score) {
+function renderFactor(label, score, bullets) {
     const colorClass = score > RISK_THRESHOLDS.YELLOW_MAX ? 'red'
         : score > RISK_THRESHOLDS.GREEN_MAX ? 'yellow'
         : 'green';
@@ -56,5 +62,40 @@ function renderFactor(label, score) {
                 <div class="risk-factor__fill risk-factor__fill--${colorClass}" style="width: ${score}%"></div>
             </div>
             <div class="risk-factor__value">${score}</div>
+            ${bullets ? `<div class="risk-factor__bullets">${bullets}</div>` : ''}
         </div>`;
+}
+
+function renderLightningBullets(details) {
+    if (!details) return '';
+    const items = [];
+    if (details.thunderstormHours > 0) {
+        items.push(`${details.thunderstormHours} thunderstorm hour${details.thunderstormHours !== 1 ? 's' : ''} forecast`);
+    }
+    if (details.maxPrecipProb > 0) {
+        items.push(`Peak precip probability: ${Math.round(details.maxPrecipProb)}%`);
+    }
+    if (details.rainHours > 0) {
+        items.push(`${details.rainHours} rain/storm hour${details.rainHours !== 1 ? 's' : ''}`);
+    }
+    return items.map(t => `<div class="risk-factor__bullet">${t}</div>`).join('');
+}
+
+function renderTrailBullets(details) {
+    if (!details) return '';
+    const items = [];
+    items.push(`7-day rain: ${details.pastRain7d}mm (threshold ${TRAIL_THRESHOLDS.RAIN_7DAY_HIGH_MM}mm)`);
+    if (details.avgSoilMoisture > 0) {
+        items.push(`Soil moisture: ${(details.avgSoilMoisture * 100).toFixed(0)}% (threshold ${(TRAIL_THRESHOLDS.SOIL_MOISTURE_HIGH * 100).toFixed(0)}%)`);
+    }
+    items.push(`Race day forecast: ${details.raceDayRain}mm`);
+    return items.map(t => `<div class="risk-factor__bullet">${t}</div>`).join('');
+}
+
+function renderWindBullets(details) {
+    if (!details) return '';
+    const items = [];
+    items.push(`Max sustained: ${formatWindSpeed(details.maxSustained)}`);
+    items.push(`Max gusts: ${formatWindSpeed(details.maxGust)}`);
+    return items.map(t => `<div class="risk-factor__bullet">${t}</div>`).join('');
 }

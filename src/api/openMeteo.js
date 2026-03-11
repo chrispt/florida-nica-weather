@@ -54,7 +54,9 @@ function transformRaceWeatherData(apiData) {
         windDirection: hourly.wind_direction_10m[i],
         windGusts: hourly.wind_gusts_10m[i],
         soilMoisture0to7: hourly.soil_moisture_0_to_7cm?.[i] ?? null,
-        soilMoisture7to28: hourly.soil_moisture_7_to_28cm?.[i] ?? null
+        soilMoisture7to28: hourly.soil_moisture_7_to_28cm?.[i] ?? null,
+        apparentTemperature: hourly.apparent_temperature?.[i] ?? null,
+        uvIndex: hourly.uv_index?.[i] ?? null
     }));
 
     // Build daily array

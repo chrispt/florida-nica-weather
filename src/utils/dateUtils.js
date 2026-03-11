@@ -111,3 +111,15 @@ export function daysUntilRace(race, now = new Date()) {
     const diff = raceStart - today;
     return Math.ceil(diff / (1000 * 60 * 60 * 24));
 }
+
+/**
+ * Forecast confidence based on days until race
+ */
+export function getForecastConfidence(race, now = new Date()) {
+    const days = daysUntilRace(race, now);
+    if (days <= 0) return { label: 'Live conditions', level: 'high', days: 0 };
+    if (days <= 3) return { label: 'High confidence', level: 'high', days };
+    if (days <= 7) return { label: 'Moderate confidence', level: 'medium', days };
+    if (days <= 14) return { label: 'Low confidence', level: 'low', days };
+    return { label: 'Extended outlook', level: 'outlook', days };
+}

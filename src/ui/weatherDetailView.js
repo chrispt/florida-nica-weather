@@ -1,10 +1,10 @@
 /**
- * Weather detail widgets — rain history, soil moisture, wind, temp
+ * Weather detail widgets — rain history, soil moisture, wind, temp, race-day summary
  */
 
 import { formatTemperature, formatWindSpeed, getWindDirectionLabel, formatPrecipitation, formatSoilMoisture, formatPercent } from '../utils/formatting.js';
 import { getWeatherDescription, getWeatherIcon } from '../config/weatherCodes.js';
-import { TRAIL_THRESHOLDS } from '../config/constants.js';
+import { TRAIL_THRESHOLDS, UV_THRESHOLDS, WEATHER_ICONS } from '../config/constants.js';
 
 export function renderWeatherDetails(container, weatherData, race) {
     if (!weatherData || !weatherData.hourly || weatherData.hourly.length === 0) {
@@ -24,8 +24,12 @@ export function renderWeatherDetails(container, weatherData, race) {
     // Race-day forecast summary
     const raceDaySummary = getRaceDaySummary(weatherData, race);
 
+    // Race-day daily summaries from daily data
+    const raceDayCards = getRaceDayCards(weatherData, race);
+
     container.innerHTML = `
         <div class="widget-grid">
+            ${renderRaceDaySummaryWidget(raceDayCards, race)}
             ${renderCurrentConditions(currentHour)}
             ${renderRainfallWidget(rainHistory, weatherData, race)}
             ${renderSoilMoistureWidget(latestSoil)}
@@ -33,10 +37,57 @@ export function renderWeatherDetails(container, weatherData, race) {
         </div>`;
 }
 
+function renderRaceDaySummaryWidget(raceDayCards, race) {
+    if (!raceDayCards || raceDayCards.length === 0) return '';
+
+    const cards = raceDayCards.map(day => {
+        const icon = WEATHER_ICONS[day.weatherCode] || WEATHER_ICONS[0];
+        const dayDate = new Date(day.date + 'T12:00:00');
+        const label = dayDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+
+        return `
+            <div class="race-day-card">
+                <div class="race-day-card__label">${label}</div>
+                <span class="race-day-card__icon">${icon.icon}</span>
+                <div class="race-day-card__temps">
+                    <span class="race-day-card__high">${formatTemperature(day.tempMax)}</span>
+                    <span class="race-day-card__low">${formatTemperature(day.tempMin)}</span>
+                </div>
+                <div class="race-day-card__detail">Precip: ${Math.round(day.precipProbMax)}%</div>
+                <div class="race-day-card__detail">Rain: ${formatPrecipitation(day.precipSum)}</div>
+                ${day.maxApparentTemp !== null ? `<div class="race-day-card__detail">Feels like: ${formatTemperature(day.maxApparentTemp)}</div>` : ''}
+                ${day.maxUv !== null ? `<div class="race-day-card__detail">UV: ${day.maxUv.toFixed(1)} <span class="uv-badge" style="background:${getUvColor(day.maxUv)}">${getUvLabel(day.maxUv)}</span></div>` : ''}
+            </div>`;
+    }).join('');
+
+    const radarBtn = race.nwsRadarUrl
+        ? `<a href="${race.nwsRadarUrl}" target="_blank" rel="noopener" class="radar-btn" onclick="event.stopPropagation()">Open NWS Radar</a>`
+        : '';
+
+    return `
+        <div class="widget widget--full">
+            <div class="widget__title" style="display:flex;justify-content:space-between;align-items:center;">
+                Race Day Forecast
+                ${radarBtn}
+            </div>
+            <div class="race-day-cards">
+                ${cards}
+            </div>
+        </div>`;
+}
+
 function renderCurrentConditions(hour) {
     if (!hour) return '';
     const icon = getWeatherIcon(hour.weatherCode);
     const desc = getWeatherDescription(hour.weatherCode);
+
+    const feelsLike = hour.apparentTemperature !== null
+        ? `<div class="widget__detail">Feels like: ${formatTemperature(hour.apparentTemperature)}</div>`
+        : '';
+
+    const uvDisplay = hour.uvIndex !== null
+        ? `<div class="widget__detail">UV Index: ${hour.uvIndex.toFixed(1)} <span class="uv-badge" style="background:${getUvColor(hour.uvIndex)}">${getUvLabel(hour.uvIndex)}</span></div>`
+        : '';
 
     return `
         <div class="widget">
@@ -46,7 +97,9 @@ function renderCurrentConditions(hour) {
                 <div>
                     <div class="widget__value">${formatTemperature(hour.temperature)}</div>
                     <div class="widget__detail">${desc}</div>
+                    ${feelsLike}
                     <div class="widget__detail">Humidity: ${formatPercent(hour.humidity)}</div>
+                    ${uvDisplay}
                 </div>
             </div>
         </div>`;
@@ -83,9 +136,6 @@ function renderSoilMoistureWidget(soil) {
     const value = soil ? soil.soilMoisture0to7 : null;
     const displayVal = formatSoilMoisture(value);
     const pct = value !== null ? Math.min(100, (value / 0.6) * 100) : 0;
-
-    const highPct = (TRAIL_THRESHOLDS.SOIL_MOISTURE_HIGH / 0.6) * 100;
-    const critPct = (TRAIL_THRESHOLDS.SOIL_MOISTURE_CRITICAL / 0.6) * 100;
 
     let fillColor = 'var(--risk-green)';
     if (value > TRAIL_THRESHOLDS.SOIL_MOISTURE_CRITICAL) fillColor = 'var(--risk-red)';
@@ -139,7 +189,25 @@ function renderWindWidget(currentHour, raceDaySummary) {
         </div>`;
 }
 
-// Helpers
+// UV helpers
+
+function getUvLabel(uv) {
+    if (uv === null || uv === undefined) return '';
+    for (const t of UV_THRESHOLDS) {
+        if (uv <= t.max) return t.label;
+    }
+    return 'Extreme';
+}
+
+function getUvColor(uv) {
+    if (uv === null || uv === undefined) return 'transparent';
+    for (const t of UV_THRESHOLDS) {
+        if (uv <= t.max) return t.color;
+    }
+    return UV_THRESHOLDS[UV_THRESHOLDS.length - 1].color;
+}
+
+// Data helpers
 
 function findCurrentHour(hourly, now) {
     const nowTs = now.getTime();
@@ -161,7 +229,6 @@ function compute7DayRainHistory(weatherData, raceDateStr) {
     const now = new Date();
     const today = now.toISOString().slice(0, 10);
 
-    // Get daily data for the past 7 days + forecast through race day
     if (weatherData.daily) {
         for (const d of weatherData.daily) {
             days.push({
@@ -172,7 +239,6 @@ function compute7DayRainHistory(weatherData, raceDateStr) {
         }
     }
 
-    // Show last 7 past days + forecast days up to race
     const todayIdx = days.findIndex(d => d.label === today);
     if (todayIdx >= 0) {
         const start = Math.max(0, todayIdx - 7);
@@ -204,4 +270,37 @@ function getRaceDaySummary(weatherData, race) {
         maxTemp: Math.max(...raceHours.map(h => h.temperature)),
         minTemp: Math.min(...raceHours.map(h => h.temperature))
     };
+}
+
+function getRaceDayCards(weatherData, race) {
+    if (!weatherData.daily) return [];
+
+    const raceDates = new Set();
+    let d = new Date(race.dates.start + 'T12:00:00');
+    const end = new Date(race.dates.end + 'T12:00:00');
+    while (d <= end) {
+        raceDates.add(d.toISOString().slice(0, 10));
+        d.setDate(d.getDate() + 1);
+    }
+
+    return weatherData.daily
+        .filter(day => raceDates.has(day.date))
+        .map(day => {
+            // Get hourly data for this day to find max apparent temp and max UV
+            const dayHours = weatherData.hourly.filter(h =>
+                h.time.toISOString().slice(0, 10) === day.date
+            );
+            const maxApparentTemp = dayHours.length > 0
+                ? Math.max(...dayHours.map(h => h.apparentTemperature ?? -Infinity))
+                : null;
+            const maxUv = dayHours.length > 0
+                ? Math.max(...dayHours.map(h => h.uvIndex ?? 0))
+                : null;
+
+            return {
+                ...day,
+                maxApparentTemp: maxApparentTemp === -Infinity ? null : maxApparentTemp,
+                maxUv: maxUv === 0 && dayHours.every(h => h.uvIndex === null) ? null : maxUv
+            };
+        });
 }

@@ -15,7 +15,9 @@ export const HOURLY_PARAMS = [
     'wind_direction_10m',
     'wind_gusts_10m',
     'soil_moisture_0_to_7cm',
-    'soil_moisture_7_to_28cm'
+    'soil_moisture_7_to_28cm',
+    'apparent_temperature',
+    'uv_index'
 ].join(',');
 
 // Daily summary parameters
@@ -128,6 +130,15 @@ export const WIND_DIRECTIONS = [
     { min: 281.25, max: 303.75, label: 'WNW' },
     { min: 303.75, max: 326.25, label: 'NW' },
     { min: 326.25, max: 348.75, label: 'NNW' }
+];
+
+// UV Index thresholds
+export const UV_THRESHOLDS = [
+    { max: 2, label: 'Low', color: 'var(--uv-low, #4ade80)' },
+    { max: 5, label: 'Moderate', color: 'var(--uv-moderate, #facc15)' },
+    { max: 7, label: 'High', color: 'var(--uv-high, #fb923c)' },
+    { max: 10, label: 'Very High', color: 'var(--uv-very-high, #ef4444)' },
+    { max: Infinity, label: 'Extreme', color: 'var(--uv-extreme, #a855f7)' }
 ];
 
 // localStorage keys

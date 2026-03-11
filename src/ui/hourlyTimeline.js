@@ -5,6 +5,7 @@
 
 import { formatTemperature, formatWindSpeed, formatPercent } from '../utils/formatting.js';
 import { getWeatherIcon } from '../config/weatherCodes.js';
+import { THUNDERSTORM_CODES, HEAVY_RAIN_CODES, WIND_THRESHOLDS } from '../config/constants.js';
 
 export function renderHourlyTimeline(container, weatherData, race) {
     if (!weatherData || !weatherData.hourly) {
@@ -76,8 +77,20 @@ function renderHourCell(hour, race) {
 
     const precipStr = hour.precipProbability > 0 ? `${formatPercent(hour.precipProbability)}` : '';
 
+    // Danger/warning classification
+    let hazardClass = '';
+    if (THUNDERSTORM_CODES.includes(hour.weatherCode)) {
+        hazardClass = 'timeline__hour--danger';
+    } else if (
+        HEAVY_RAIN_CODES.includes(hour.weatherCode) ||
+        hour.precipProbability > 70 ||
+        hour.windSpeed > WIND_THRESHOLDS.ADVISORY_KMH
+    ) {
+        hazardClass = 'timeline__hour--warning';
+    }
+
     return `
-        <div class="timeline__hour ${isRaceHour ? 'timeline__hour--race' : ''}">
+        <div class="timeline__hour ${isRaceHour ? 'timeline__hour--race' : ''} ${hazardClass}">
             <span class="timeline__hour-time">${timeStr}</span>
             <span class="timeline__hour-icon">${icon.icon}</span>
             <span class="timeline__hour-temp">${formatTemperature(hour.temperature)}</span>
