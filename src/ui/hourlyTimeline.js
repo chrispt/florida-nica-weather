@@ -51,9 +51,13 @@ export function renderHourlyTimeline(container, weatherData, race) {
                     <div class="timeline__grid">
                         ${dayGroups[day].map(h => renderHourCell(h, race)).join('')}
                     </div>
+                    <div class="timeline__detail-label"></div>
                 </div>
             `).join('')}
         </div>`;
+
+    // Detail label interaction (tap-to-reveal / hover)
+    setupTimelineInteraction(container);
 
     // Tab switching
     const tabs = container.querySelectorAll('.timeline__tab');
@@ -89,8 +93,12 @@ function renderHourCell(hour, race) {
         hazardClass = 'timeline__hour--warning';
     }
 
+    const fullDateTime = formatFullDateTime(hour.time);
+
     return `
-        <div class="timeline__hour ${isRaceHour ? 'timeline__hour--race' : ''} ${hazardClass}">
+        <div class="timeline__hour ${isRaceHour ? 'timeline__hour--race' : ''} ${hazardClass}"
+             data-datetime="${hour.time.toISOString()}"
+             title="${fullDateTime}">
             <span class="timeline__hour-time">${timeStr}</span>
             <span class="timeline__hour-icon">${icon.icon}</span>
             <span class="timeline__hour-temp">${formatTemperature(hour.temperature)}</span>
@@ -112,4 +120,60 @@ function groupByDay(hours) {
 function formatDayLabel(dateStr) {
     const d = new Date(dateStr + 'T12:00:00');
     return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+}
+
+function formatFullDateTime(date) {
+    const dayPart = date.toLocaleDateString('en-US', {
+        weekday: 'short', month: 'short', day: 'numeric'
+    });
+    const timePart = date.toLocaleTimeString('en-US', {
+        hour: 'numeric', minute: '2-digit', hour12: true
+    });
+    return `${dayPart} — ${timePart}`;
+}
+
+function setupTimelineInteraction(container) {
+    container.querySelectorAll('.timeline__scroll').forEach(scroll => {
+        const label = scroll.querySelector('.timeline__detail-label');
+
+        // Click: toggle selection and persist label
+        scroll.addEventListener('click', (e) => {
+            const cell = e.target.closest('.timeline__hour');
+            if (!cell) return;
+
+            const wasSelected = cell.classList.contains('timeline__hour--selected');
+
+            // Clear all selections in this scroll pane
+            scroll.querySelectorAll('.timeline__hour--selected').forEach(c =>
+                c.classList.remove('timeline__hour--selected')
+            );
+
+            if (wasSelected) {
+                // Tapping same cell again dismisses
+                label.textContent = '';
+                label.classList.remove('timeline__detail-label--visible');
+            } else {
+                cell.classList.add('timeline__hour--selected');
+                label.textContent = formatFullDateTime(new Date(cell.dataset.datetime));
+                label.classList.add('timeline__detail-label--visible');
+            }
+        });
+
+        // Hover: show label on mouseenter (desktop)
+        scroll.addEventListener('mouseenter', (e) => {
+            const cell = e.target.closest('.timeline__hour');
+            if (!cell) return;
+            // Don't override a clicked selection
+            if (scroll.querySelector('.timeline__hour--selected')) return;
+            label.textContent = formatFullDateTime(new Date(cell.dataset.datetime));
+            label.classList.add('timeline__detail-label--visible');
+        }, true); // capture phase for delegation
+
+        // Mouse leave: hide label unless a cell is clicked/selected
+        scroll.addEventListener('mouseleave', () => {
+            if (scroll.querySelector('.timeline__hour--selected')) return;
+            label.textContent = '';
+            label.classList.remove('timeline__detail-label--visible');
+        });
+    });
 }
