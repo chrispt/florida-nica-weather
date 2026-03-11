@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Race weather dashboard for Florida NICA mountain bike season — lightning, trail conditions, and risk assessment">
+    <meta name="theme-color" content="#0f172a">
+    <title>Florida NICA Race Weather</title>
+
+    <link rel="stylesheet" href="/styles/base.css">
+    <link rel="stylesheet" href="/styles/main.css">
+</head>
+<body>
+    <div class="app" id="app">
+        <!-- Header -->
+        <header class="header">
+            <div class="header__brand">
+                <h1 class="header__title">Florida <span class="header__accent">NICA</span> Race Weather</h1>
+            </div>
+            <div class="header__meta">
+                <span id="last-update"></span>
+                <button class="header__refresh-btn" id="refresh-btn">Refresh</button>
+            </div>
+        </header>
+
+        <!-- Error container -->
+        <div id="error-container"></div>
+
+        <!-- Hero: next race info + countdown -->
+        <div id="hero"></div>
+
+        <!-- Risk banner -->
+        <div id="risk-banner"></div>
+
+        <!-- Weather detail widgets -->
+        <div id="weather-details"></div>
+
+        <!-- Hourly timeline -->
+        <div id="hourly-timeline"></div>
+
+        <!-- All races grid -->
+        <div id="all-races"></div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            Weather data from <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> |
+            Built for <a href="https://www.floridamtb.org/" target="_blank" rel="noopener">Florida NICA</a> race organizers
+        </footer>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+</body>
+</html>
