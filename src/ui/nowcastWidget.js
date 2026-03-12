@@ -4,6 +4,7 @@
  */
 
 import { formatPrecipitation } from '../utils/formatting.js';
+import { renderInfoButton } from './infoButton.js';
 
 /**
  * Render the nowcast widget
@@ -35,7 +36,7 @@ export function renderNowcastWidget(nowcastData) {
 
     return `
         <div class="widget widget--full">
-            <div class="widget__title">Next 2 Hours — Precipitation Nowcast</div>
+            <div class="widget__title">Next 2 Hours — Precipitation Nowcast ${renderInfoButton('nowcast')}</div>
             <div class="nowcast-summary">
                 <span class="nowcast-summary__text">${summaryText}</span>
                 ${hasAnyRain ? `<span class="nowcast-trend">${trendArrow} ${trendLabel}</span>` : ''}

@@ -6,6 +6,7 @@
 import { formatTemperature, formatWindSpeed, formatPercent } from '../utils/formatting.js';
 import { getWeatherIcon } from '../config/weatherCodes.js';
 import { THUNDERSTORM_CODES, HEAVY_RAIN_CODES, WIND_THRESHOLDS, CAPE_THRESHOLDS } from '../config/constants.js';
+import { renderInfoButton, setupInfoButtons } from './infoButton.js';
 
 export function renderHourlyTimeline(container, weatherData, race) {
     if (!weatherData || !weatherData.hourly) {
@@ -36,7 +37,7 @@ export function renderHourlyTimeline(container, weatherData, race) {
     container.innerHTML = `
         <div class="timeline">
             <div class="timeline__header">
-                <div class="timeline__title">Race Weekend Hourly Forecast</div>
+                <div class="timeline__title">Race Weekend Hourly Forecast ${renderInfoButton('hourlyTimeline')}</div>
                 <div class="timeline__day-tabs">
                     ${dayKeys.map((day, i) => `
                         <button class="timeline__tab ${i === 0 ? 'timeline__tab--active' : ''}"
@@ -55,6 +56,17 @@ export function renderHourlyTimeline(container, weatherData, race) {
                 </div>
             `).join('')}
         </div>`;
+
+    // Info buttons
+    setupInfoButtons(container);
+
+    // Scroll fade: remove at end
+    container.querySelectorAll('.timeline__scroll').forEach(scroll => {
+        scroll.addEventListener('scroll', () => {
+            const atEnd = scroll.scrollLeft + scroll.clientWidth >= scroll.scrollWidth - 10;
+            scroll.classList.toggle('timeline__scroll--at-end', atEnd);
+        });
+    });
 
     // Detail label interaction (tap-to-reveal / hover)
     setupTimelineInteraction(container);

@@ -8,6 +8,7 @@ import { TRAIL_THRESHOLDS, UV_THRESHOLDS, WEATHER_ICONS } from '../config/consta
 import { renderHeatSafetyWidget } from './heatSafetyWidget.js';
 import { renderNowcastWidget } from './nowcastWidget.js';
 import { getRaceHourlyWindow } from '../config/riskAssessment.js';
+import { renderInfoButton, setupInfoButtons } from './infoButton.js';
 
 export function renderWeatherDetails(container, weatherData, race, nowcastData = null, climateDeparture = null) {
     if (!weatherData || !weatherData.hourly || weatherData.hourly.length === 0) {
@@ -49,6 +50,8 @@ export function renderWeatherDetails(container, weatherData, race, nowcastData =
             ${renderWindWidget(currentHour, raceDaySummary)}
             ${heatHtml}
         </div>`;
+
+    setupInfoButtons(container);
 }
 
 function renderRaceDaySummaryWidget(raceDayCards, race) {
@@ -81,7 +84,7 @@ function renderRaceDaySummaryWidget(raceDayCards, race) {
     return `
         <div class="widget widget--full">
             <div class="widget__title" style="display:flex;justify-content:space-between;align-items:center;">
-                Race Day Forecast
+                Race Day Forecast ${renderInfoButton('raceDayForecast')}
                 ${radarBtn}
             </div>
             <div class="race-day-cards">
@@ -105,7 +108,7 @@ function renderCurrentConditions(hour) {
 
     return `
         <div class="widget">
-            <div class="widget__title">Current Conditions</div>
+            <div class="widget__title">Current Conditions ${renderInfoButton('currentConditions')}</div>
             <div style="display: flex; align-items: center; gap: var(--space-md);">
                 <span style="font-size: 2.5rem;">${icon.icon}</span>
                 <div>
@@ -144,7 +147,7 @@ function renderRainfallWidget(rainHistory, weatherData, race, climateDeparture =
 
     return `
         <div class="widget">
-            <div class="widget__title">7-Day Rainfall</div>
+            <div class="widget__title">7-Day Rainfall ${renderInfoButton('rainfallHistory')}</div>
             <div class="widget__value">${formatPrecipitation(totalPast)}</div>
             <div class="widget__detail">Past 7 days cumulative</div>
             ${departureHtml}
@@ -170,7 +173,7 @@ function renderSoilMoistureWidget(soil) {
 
     return `
         <div class="widget">
-            <div class="widget__title">Soil Moisture</div>
+            <div class="widget__title">Soil Moisture ${renderInfoButton('soilMoisture')}</div>
             <div class="widget__value">${displayVal}</div>
             <div class="widget__detail">Surface (0-7cm)</div>
             <div class="soil-meter">
@@ -195,7 +198,7 @@ function renderWindWidget(currentHour, raceDaySummary) {
 
     return `
         <div class="widget">
-            <div class="widget__title">Wind</div>
+            <div class="widget__title">Wind ${renderInfoButton('wind')}</div>
             <div class="widget__value">${formatWindSpeed(currentHour.windSpeed)}</div>
             <div class="widget__detail">${getWindDirectionLabel(currentHour.windDirection)} (${Math.round(currentHour.windDirection)}°)</div>
             <div class="widget__row">

@@ -5,6 +5,7 @@
 import { daysUntilRace } from '../utils/dateUtils.js';
 import { formatTemperature } from '../utils/formatting.js';
 import { getWeatherIcon } from '../config/weatherCodes.js';
+import { renderInfoButton, setupInfoButtons } from './infoButton.js';
 
 const MILESTONES = [
     { hoursBeforeRace: 72, label: '72hr Assessment', action: 'Initial weather review. Brief coaching staff on outlook.' },
@@ -111,7 +112,7 @@ export function renderDecisionTimeline(container, race, riskData, weatherData) {
     container.innerHTML = `
         <div class="decision-timeline">
             <div class="decision-timeline__header">
-                <div class="decision-timeline__title">Decision Timeline</div>
+                <div class="decision-timeline__title">Decision Timeline ${renderInfoButton('decisionTimeline')}</div>
                 <div class="decision-timeline__status">
                     <span class="dt-status-badge dt-status-badge--${riskLevel}">${riskLevel}</span>
                     <span class="decision-timeline__summary">${riskSummary}</span>
@@ -121,4 +122,6 @@ export function renderDecisionTimeline(container, race, riskData, weatherData) {
                 ${milestones}
             </div>
         </div>`;
+
+    setupInfoButtons(container);
 }

@@ -96,6 +96,11 @@ async function fetchAllWeatherData() {
     store.set('error', null);
     showLoading(true);
 
+    if (refreshBtn) {
+        refreshBtn.disabled = true;
+        refreshBtn.textContent = 'Refreshing...';
+    }
+
     try {
         const racesToFetch = getRelevantRaces();
 
@@ -214,6 +219,11 @@ async function fetchAllWeatherData() {
     }
 
     showLoading(false);
+
+    if (refreshBtn) {
+        refreshBtn.disabled = false;
+        refreshBtn.textContent = 'Refresh';
+    }
 }
 
 /**

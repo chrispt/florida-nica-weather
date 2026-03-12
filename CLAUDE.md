@@ -47,6 +47,10 @@ Normal: 15 min. Race day: 5 min. Configurable in `src/config/constants.js`.
 
 Unit preferences (temp/speed) persist to localStorage. Risk notification preferences and previous risk levels also use localStorage (keys in `STORAGE_KEYS`).
 
+## Workflow
+
+- Always commit and push after making code changes. Do not wait for the user to ask.
+
 ## Domain Context
 
 - NICA weather policy: Lightning within 10 miles stops activity; 30-min wait after last strike before resuming

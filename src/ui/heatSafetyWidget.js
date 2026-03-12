@@ -4,6 +4,7 @@
 
 import { calculateWBGT, celsiusToFahrenheit, getWBGTCategory } from '../utils/heatIndex.js';
 import { WBGT_THRESHOLDS } from '../config/constants.js';
+import { renderInfoButton } from './infoButton.js';
 
 /**
  * Render the heat safety widget
@@ -38,7 +39,7 @@ export function renderHeatSafetyWidget(raceHourlyData) {
 
     return `
         <div class="widget">
-            <div class="widget__title">Heat Safety (Est. WBGT)</div>
+            <div class="widget__title">Heat Safety (Est. WBGT) ${renderInfoButton('heatSafety')}</div>
             <div class="wbgt-value" style="color: ${category.color};">
                 <span class="widget__value">${Math.round(peakWBGT.wbgtF)}&deg;F</span>
                 <span class="wbgt-category" style="background: ${category.color}; color: white;">${category.label}</span>

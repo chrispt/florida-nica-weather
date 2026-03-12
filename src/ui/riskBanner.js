@@ -5,6 +5,7 @@
 import { RISK_THRESHOLDS, TRAIL_THRESHOLDS } from '../config/constants.js';
 import { getForecastConfidence } from '../utils/dateUtils.js';
 import { convertWindSpeed, formatWindSpeed, formatPrecipitation } from '../utils/formatting.js';
+import { renderInfoButton, setupInfoButtons } from './infoButton.js';
 
 export function renderRiskBanner(container, risk, race) {
     if (!risk || risk.overall === undefined) {
@@ -32,6 +33,7 @@ export function renderRiskBanner(container, risk, race) {
         <div class="risk-banner risk-banner--${level}" id="risk-banner-toggle">
             <div class="risk-banner__header">
                 <span class="risk-banner__level">${level} — Race Risk</span>
+                ${renderInfoButton('riskBanner')}
                 <span class="risk-banner__score">${overall}</span>
             </div>
             <div class="risk-banner__summary">${summary}</div>
@@ -45,15 +47,22 @@ export function renderRiskBanner(container, risk, race) {
                     ${renderFactor('Heat', heat || 0, renderHeatBullets(heatDetails))}
                 </div>
             </div>
-            <div class="risk-banner__expand-hint" id="expand-hint">Click for details</div>
+            <div class="risk-banner__expand-hint" id="expand-hint">
+                <span>Click for details</span>
+                <span class="risk-banner__chevron">&#x25BC;</span>
+            </div>
         </div>`;
+
+    // Info buttons (must be set up before the banner click handler)
+    setupInfoButtons(container);
 
     // Toggle expand
     const banner = container.querySelector('#risk-banner-toggle');
     banner.addEventListener('click', () => {
         banner.classList.toggle('expanded');
         const hint = banner.querySelector('#expand-hint');
-        hint.textContent = banner.classList.contains('expanded') ? 'Click to collapse' : 'Click for details';
+        const hintText = hint.querySelector('span:first-child');
+        hintText.textContent = banner.classList.contains('expanded') ? 'Click to collapse' : 'Click for details';
     });
 }
 
