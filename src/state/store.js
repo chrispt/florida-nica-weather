@@ -61,9 +61,7 @@ class Store {
         this._state[key] = value;
         this._notifyListeners(key, value, oldValue);
 
-        if (key in STORAGE_KEYS) {
-            this._persistToStorage(key, value);
-        }
+        this._persistToStorage(key, value);
     }
 
     update(updates) {

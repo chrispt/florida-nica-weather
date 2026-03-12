@@ -48,9 +48,15 @@ export function formatRelativeTime(date) {
     return date.toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
 }
 
-export function formatPrecipitation(mm) {
+export function formatPrecipitation(mm, unit = null) {
+    const tempUnit = unit || store.get('tempUnit') || 'F';
+    if (tempUnit === 'F') {
+        const inches = mm / 25.4;
+        if (mm === 0) return '0 in';
+        return `${inches < 0.1 && inches > -0.1 ? inches.toFixed(2) : inches.toFixed(1)} in`;
+    }
     if (mm === 0) return '0 mm';
-    if (mm < 1) return `${mm.toFixed(1)} mm`;
+    if (Math.abs(mm) < 1) return `${mm.toFixed(1)} mm`;
     return `${Math.round(mm)} mm`;
 }
 

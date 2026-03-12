@@ -3,6 +3,8 @@
  * Only shown when a race is within 2 days
  */
 
+import { formatPrecipitation } from '../utils/formatting.js';
+
 /**
  * Render the nowcast widget
  * @param {object} nowcastData - { intervals: [{time, precipitation}], trend, fetchedAt }
@@ -28,7 +30,7 @@ export function renderNowcastWidget(nowcastData) {
         const time = new Date(d.time);
         const timeStr = time.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
         const barClass = d.precipitation > 5 ? 'nowcast-bar--heavy' : d.precipitation > 0 ? 'nowcast-bar--rain' : 'nowcast-bar--dry';
-        return `<div class="nowcast-bar ${barClass}" style="height: ${height}%" title="${timeStr}: ${d.precipitation.toFixed(1)}mm"></div>`;
+        return `<div class="nowcast-bar ${barClass}" style="height: ${height}%" title="${timeStr}: ${formatPrecipitation(d.precipitation)}"></div>`;
     }).join('');
 
     return `

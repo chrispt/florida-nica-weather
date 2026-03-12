@@ -4,7 +4,7 @@
 
 import { RISK_THRESHOLDS, TRAIL_THRESHOLDS } from '../config/constants.js';
 import { getForecastConfidence } from '../utils/dateUtils.js';
-import { convertWindSpeed, formatWindSpeed } from '../utils/formatting.js';
+import { convertWindSpeed, formatWindSpeed, formatPrecipitation } from '../utils/formatting.js';
 
 export function renderRiskBanner(container, risk, race) {
     if (!risk || risk.overall === undefined) {
@@ -97,15 +97,15 @@ function renderLightningBullets(details) {
 function renderTrailBullets(details) {
     if (!details) return '';
     const items = [];
-    items.push(`7-day rain: ${details.pastRain7d}mm (threshold ${TRAIL_THRESHOLDS.RAIN_7DAY_HIGH_MM}mm)`);
+    items.push(`7-day rain: ${formatPrecipitation(details.pastRain7d)} (threshold ${formatPrecipitation(TRAIL_THRESHOLDS.RAIN_7DAY_HIGH_MM)})`);
     if (details.avgSoilMoisture > 0) {
         items.push(`Soil moisture: ${(details.avgSoilMoisture * 100).toFixed(0)}% (threshold ${(TRAIL_THRESHOLDS.SOIL_MOISTURE_HIGH * 100).toFixed(0)}%)`);
     }
-    items.push(`Race day forecast: ${details.raceDayRain}mm`);
+    items.push(`Race day forecast: ${formatPrecipitation(details.raceDayRain)}`);
     if (details.climateDeparture != null) {
         const sign = details.climateDeparture >= 0 ? '+' : '';
         const color = details.climateDeparture > 50 ? 'var(--risk-red)' : details.climateDeparture < -20 ? 'var(--risk-green)' : 'inherit';
-        items.push(`<span style="color:${color}">${sign}${Math.round(details.climateDeparture)}mm vs normal</span>`);
+        items.push(`<span style="color:${color}">${sign}${formatPrecipitation(details.climateDeparture)} vs normal</span>`);
     }
     return items.map(t => `<div class="risk-factor__bullet">${t}</div>`).join('');
 }

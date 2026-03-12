@@ -139,7 +139,7 @@ function renderRainfallWidget(rainHistory, weatherData, race, climateDeparture =
         const colorClass = climateDeparture > 50 ? 'rain-departure--above'
             : climateDeparture < -20 ? 'rain-departure--below'
             : 'rain-departure--normal';
-        departureHtml = `<div class="rain-departure ${colorClass}">${sign}${Math.round(climateDeparture)}mm vs 30-yr normal</div>`;
+        departureHtml = `<div class="rain-departure ${colorClass}">${sign}${formatPrecipitation(climateDeparture)} vs 30-yr normal</div>`;
     }
 
     return `

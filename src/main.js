@@ -19,6 +19,7 @@ import { renderAlertsBanner } from './ui/alertsBanner.js';
 import { renderDecisionTimeline } from './ui/decisionTimeline.js';
 import { renderShareButton, updateURLHash, readRaceFromURL } from './ui/shareStatus.js';
 import { renderNotificationBell, addRecentTransition } from './ui/notificationBell.js';
+import { renderUnitToggle } from './ui/unitToggle.js';
 import {
     initNotifications, checkForRiskTransitions,
     sendRiskNotification, shouldNotify,
@@ -38,6 +39,7 @@ const lastUpdateEl = document.getElementById('last-update');
 const errorContainer = document.getElementById('error-container');
 const refreshBtn = document.getElementById('refresh-btn');
 const notifBellContainer = document.getElementById('notification-bell');
+const unitToggleContainer = document.getElementById('unit-toggle');
 
 let refreshTimer = null;
 
@@ -63,6 +65,14 @@ async function init() {
     // Initialize notifications
     initNotifications();
     renderNotificationBell(notifBellContainer);
+
+    // Unit toggle
+    renderUnitToggle(unitToggleContainer);
+    store.subscribe('tempUnit', () => {
+        renderUnitToggle(unitToggleContainer);
+        renderActiveRace();
+        renderAllRaces(allRacesContainer, handleRaceClick);
+    });
 
     // Wire up refresh button
     refreshBtn?.addEventListener('click', () => fetchAllWeatherData());
