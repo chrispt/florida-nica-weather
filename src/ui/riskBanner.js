@@ -33,8 +33,8 @@ export function renderRiskBanner(container, risk, race) {
         <div class="risk-banner risk-banner--${level}" id="risk-banner-toggle">
             <div class="risk-banner__header">
                 <span class="risk-banner__level">${level} — Race Risk</span>
-                ${renderInfoButton('riskBanner')}
                 <span class="risk-banner__score">${overall}</span>
+                ${renderInfoButton('riskBanner')}
             </div>
             <div class="risk-banner__summary">${summary}</div>
             ${nwsOverrideBadge}

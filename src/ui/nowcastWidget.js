@@ -52,6 +52,13 @@ export function renderNowcastWidget(nowcastData) {
         </div>`;
 }
 
+function formatMinutes(mins) {
+    if (mins <= 60) return `${mins} min`;
+    const h = Math.floor(mins / 60);
+    const m = mins % 60;
+    return m > 0 ? `${h}hr ${m}min` : `${h}hr`;
+}
+
 function getSummaryText(intervals) {
     const hasRainNow = intervals.length > 0 && intervals[0].precipitation > 0;
     const firstRainIdx = intervals.findIndex(d => d.precipitation > 0);
@@ -64,7 +71,7 @@ function getSummaryText(intervals) {
 
     if (hasRainNow && firstDryIdx >= 0) {
         const minsUntilDry = firstDryIdx * 15;
-        return `Rain clearing in ~${minsUntilDry} min`;
+        return `Rain clearing in ~${formatMinutes(minsUntilDry)}`;
     }
 
     if (hasRainNow) {
@@ -73,7 +80,7 @@ function getSummaryText(intervals) {
 
     if (firstRainIdx >= 0) {
         const minsUntilRain = firstRainIdx * 15;
-        return `Rain expected in ~${minsUntilRain} min`;
+        return `Rain expected in ~${formatMinutes(minsUntilRain)}`;
     }
 
     return 'Precipitation data available';
