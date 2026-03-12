@@ -1458,6 +1458,12 @@
 
 /* ==================== INFO BUTTONS ==================== */
 
+.info-btn-wrapper {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
 .info-btn {
     display: inline-flex;
     align-items: center;
@@ -1487,7 +1493,7 @@
 .info-popover {
     position: absolute;
     top: calc(100% + var(--space-xs));
-    left: 0;
+    right: 0;
     z-index: 50;
     max-width: 280px;
     padding: var(--space-sm) var(--space-md);
