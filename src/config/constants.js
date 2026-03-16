@@ -3,11 +3,13 @@
  */
 
 export const OPEN_METEO_BASE = 'https://api.open-meteo.com/v1/forecast';
+export const OPEN_METEO_AQ_BASE = 'https://air-quality-api.open-meteo.com/v1/air-quality';
 
 // NWS Alerts API
 export const NWS_ALERTS_BASE = 'https://api.weather.gov/alerts/active';
 export const NWS_USER_AGENT = '(FloridaNICAWeather, contact@floridamtb.org)';
-export const NWS_AUTO_RED_EVENTS = ['Tornado Warning', 'Severe Thunderstorm Warning'];
+export const NWS_AUTO_RED_EVENTS = ['Tornado Warning', 'Severe Thunderstorm Warning', 'Flash Flood Warning'];
+export const NWS_AUTO_ORANGE_EVENTS = ['Severe Thunderstorm Watch', 'Flash Flood Watch', 'Tornado Watch'];
 
 // Hourly parameters including soil moisture for trail condition assessment
 export const HOURLY_PARAMS = [
@@ -42,11 +44,12 @@ export const DAILY_PARAMS = [
 export const REFRESH_INTERVAL_NORMAL = 15 * 60 * 1000;  // 15 minutes
 export const REFRESH_INTERVAL_RACEDAY = 5 * 60 * 1000;  // 5 minutes
 
-// Risk thresholds
+// Risk thresholds — 4-level system per NICA guidelines
 export const RISK_THRESHOLDS = {
-    GREEN_MAX: 30,
-    YELLOW_MAX: 60
-    // Above 60 = RED
+    GREEN_MAX: 25,
+    YELLOW_MAX: 50,
+    ORANGE_MAX: 75
+    // Above 75 = RED
 };
 
 // CAPE thresholds (J/kg) for thunderstorm potential
@@ -56,11 +59,71 @@ export const CAPE_THRESHOLDS = {
     EXTREME: 3500
 };
 
-// WBGT thresholds (°F) per NICA heat safety guidelines
+// WBGT thresholds (°F) — legacy, kept for backward compatibility
 export const WBGT_THRESHOLDS = {
     GREEN_MAX_F: 82,
     YELLOW_MAX_F: 87,
     ORANGE_MAX_F: 90
+};
+
+// Heat Index thresholds (°F) per official NICA weather guidelines
+export const HEAT_INDEX_THRESHOLDS = {
+    GREEN_MAX_F: 95,
+    YELLOW_MAX_F: 100,
+    ORANGE_MAX_F: 105
+};
+
+// Heavy rain rate thresholds (mm/hr)
+export const HEAVY_RAIN_RATE_THRESHOLDS = {
+    YELLOW_MAX_MM_HR: 5.08,   // 0.20 in/hr
+    ORANGE_MAX_MM_HR: 10.16   // 0.40 in/hr
+};
+
+// Air Quality Index thresholds (US AQI)
+export const AQI_THRESHOLDS = {
+    GREEN_MAX: 50,
+    YELLOW_MAX: 100,
+    ORANGE_MAX: 150
+};
+
+// NICA recommended actions per category and risk level
+export const NICA_ACTIONS = {
+    heat: {
+        GREEN: 'Standard hydration practices',
+        YELLOW: 'Max activity: 2 hours. Increase hydration stations.',
+        ORANGE: 'Max activity: 1 hour. Mandatory cool-down breaks.',
+        RED: 'Cancel outdoor activity'
+    },
+    lightning: {
+        GREEN: 'No restrictions',
+        YELLOW: 'Monitor radar closely',
+        ORANGE: 'Prepare for activity stoppage',
+        RED: 'Stop activity. 30-min wait after last strike.'
+    },
+    wind: {
+        GREEN: 'No restrictions',
+        YELLOW: 'Monitor conditions',
+        ORANGE: 'Course modifications may be needed',
+        RED: 'Cancel or delay'
+    },
+    heavyRain: {
+        GREEN: 'No restrictions',
+        YELLOW: 'Monitor trail conditions',
+        ORANGE: 'Evacuate trails. Seek shelter.',
+        RED: 'Cancel activity'
+    },
+    aqi: {
+        GREEN: 'No restrictions',
+        YELLOW: 'Sensitive individuals may limit exertion',
+        ORANGE: 'Competitive events canceled. Non-competitive reduced.',
+        RED: 'All outdoor activity canceled'
+    },
+    trailDamage: {
+        GREEN: 'Trails in good condition',
+        YELLOW: 'Monitor trail conditions',
+        ORANGE: 'Course modifications likely needed',
+        RED: 'Trails unsafe — cancel or relocate'
+    }
 };
 
 // Nowcast proximity threshold — only fetch for races within this many days

@@ -7,10 +7,11 @@ import { getWeatherDescription, getWeatherIcon } from '../config/weatherCodes.js
 import { TRAIL_THRESHOLDS, UV_THRESHOLDS, WEATHER_ICONS } from '../config/constants.js';
 import { renderHeatSafetyWidget } from './heatSafetyWidget.js';
 import { renderNowcastWidget } from './nowcastWidget.js';
+import { renderAQIWidget } from './aqiWidget.js';
 import { getRaceHourlyWindow } from '../config/riskAssessment.js';
 import { renderInfoButton, setupInfoButtons } from './infoButton.js';
 
-export function renderWeatherDetails(container, weatherData, race, nowcastData = null, climateDeparture = null) {
+export function renderWeatherDetails(container, weatherData, race, nowcastData = null, climateDeparture = null, aqiData = null) {
     if (!weatherData || !weatherData.hourly || weatherData.hourly.length === 0) {
         container.innerHTML = '<div class="loading"><div class="loading__spinner"></div><span>Loading weather data...</span></div>';
         return;
@@ -40,6 +41,9 @@ export function renderWeatherDetails(container, weatherData, race, nowcastData =
     // Heat safety widget
     const heatHtml = renderHeatSafetyWidget(raceHourlyData);
 
+    // AQI widget
+    const aqiHtml = aqiData ? renderAQIWidget(aqiData, race) : '';
+
     container.innerHTML = `
         <div class="widget-grid">
             ${nowcastHtml}
@@ -49,6 +53,7 @@ export function renderWeatherDetails(container, weatherData, race, nowcastData =
             ${renderSoilMoistureWidget(latestSoil)}
             ${renderWindWidget(currentHour, raceDaySummary)}
             ${heatHtml}
+            ${aqiHtml}
         </div>`;
 
     setupInfoButtons(container);

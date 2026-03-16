@@ -50,6 +50,10 @@ export function renderNotificationBell(container) {
                 <span class="notif-dropdown__level notif-dropdown__level--red">RED</span>
             </label>
             <label class="notif-dropdown__check-row">
+                <input type="checkbox" data-transition="toOrange" ${prefs.transitions.includes('toOrange') ? 'checked' : ''}>
+                <span class="notif-dropdown__level notif-dropdown__level--orange">ORANGE</span>
+            </label>
+            <label class="notif-dropdown__check-row">
                 <input type="checkbox" data-transition="toYellow" ${prefs.transitions.includes('toYellow') ? 'checked' : ''}>
                 <span class="notif-dropdown__level notif-dropdown__level--yellow">YELLOW</span>
             </label>

@@ -21,11 +21,14 @@ const initialState = {
     // Precipitation nowcast keyed by race ID: { [raceId]: { intervals: [], trend, fetchedAt } }
     nowcastData: {},
 
-    // Previous risk levels for notification transitions: { [raceId]: 'GREEN'|'YELLOW'|'RED' }
+    // Air quality data keyed by race ID: { [raceId]: [{time, aqi}] }
+    aqiData: {},
+
+    // Previous risk levels for notification transitions: { [raceId]: 'GREEN'|'YELLOW'|'ORANGE'|'RED' }
     previousRiskLevels: {},
 
     // Notification preferences: { enabled, transitions: [...] }
-    notificationPrefs: { enabled: false, transitions: ['toRed', 'toYellow', 'toGreen'] },
+    notificationPrefs: { enabled: false, transitions: ['toRed', 'toOrange', 'toYellow', 'toGreen'] },
 
     // Timing
     lastFetchTime: null,

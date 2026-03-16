@@ -165,6 +165,10 @@
     background: var(--risk-yellow-bg);
     border-color: var(--risk-yellow);
 }
+.risk-banner--ORANGE {
+    background: var(--risk-orange-bg);
+    border-color: var(--risk-orange);
+}
 .risk-banner--RED {
     background: var(--risk-red-bg);
     border-color: var(--risk-red);
@@ -192,6 +196,7 @@
 
 .risk-banner--GREEN .risk-banner__level { color: var(--risk-green); }
 .risk-banner--YELLOW .risk-banner__level { color: var(--risk-yellow); }
+.risk-banner--ORANGE .risk-banner__level { color: var(--risk-orange); }
 .risk-banner--RED .risk-banner__level { color: var(--risk-red); }
 
 .risk-banner__score {
@@ -201,6 +206,7 @@
 }
 .risk-banner--GREEN .risk-banner__score { color: var(--risk-green); }
 .risk-banner--YELLOW .risk-banner__score { color: var(--risk-yellow); }
+.risk-banner--ORANGE .risk-banner__score { color: var(--risk-orange); }
 .risk-banner--RED .risk-banner__score { color: var(--risk-red); }
 
 .risk-banner__summary {
@@ -218,7 +224,7 @@
 
 .risk-banner__factors {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: var(--space-md);
 }
 
@@ -256,6 +262,7 @@
 
 .risk-factor__fill--green { background: var(--risk-green); }
 .risk-factor__fill--yellow { background: var(--risk-yellow); }
+.risk-factor__fill--orange { background: var(--risk-orange); }
 .risk-factor__fill--red { background: var(--risk-red); }
 
 .risk-banner__expand-hint {
@@ -295,6 +302,26 @@
 .risk-factor__bullet::before {
     content: '\2022 ';
     opacity: 0.5;
+}
+
+.risk-factor__nica-action {
+    font-size: 0.65rem;
+    font-weight: 600;
+    margin-top: var(--space-xs);
+    padding: 2px 6px;
+    border-radius: var(--radius-sm);
+    text-align: center;
+    line-height: 1.4;
+}
+
+.risk-factor__nica-action--orange {
+    background: var(--risk-orange-bg);
+    color: var(--risk-orange);
+}
+
+.risk-factor__nica-action--red {
+    background: var(--risk-red-bg);
+    color: var(--risk-red);
 }
 
 /* Forecast confidence tag */
@@ -798,6 +825,11 @@
     color: var(--risk-yellow);
     border: 1px solid var(--risk-yellow);
 }
+.race-card__badge--ORANGE {
+    background: var(--risk-orange-bg);
+    color: var(--risk-orange);
+    border: 1px solid var(--risk-orange);
+}
 .race-card__badge--RED {
     background: var(--risk-red-bg);
     color: var(--risk-red);
@@ -1100,6 +1132,7 @@
 }
 .dt-status-badge--GREEN { background: var(--risk-green-bg); color: var(--risk-green); border: 1px solid var(--risk-green); }
 .dt-status-badge--YELLOW { background: var(--risk-yellow-bg); color: var(--risk-yellow); border: 1px solid var(--risk-yellow); }
+.dt-status-badge--ORANGE { background: var(--risk-orange-bg); color: var(--risk-orange); border: 1px solid var(--risk-orange); }
 .dt-status-badge--RED { background: var(--risk-red-bg); color: var(--risk-red); border: 1px solid var(--risk-red); }
 
 .decision-timeline__line {
@@ -1415,6 +1448,7 @@
     font-size: 0.75rem;
 }
 .notif-dropdown__level--red { color: var(--risk-red); }
+.notif-dropdown__level--orange { color: var(--risk-orange); }
 .notif-dropdown__level--yellow { color: var(--risk-yellow); }
 .notif-dropdown__level--green { color: var(--risk-green); }
 

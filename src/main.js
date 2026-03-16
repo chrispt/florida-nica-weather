@@ -7,6 +7,7 @@ import { RACES } from './config/raceSchedule.js';
 import { fetchRaceWeather, fetchNowcast } from './api/openMeteo.js';
 import { fetchNWSAlerts, filterAlertsForRaceWindow } from './api/nwsAlerts.js';
 import { fetchClimatePrecipNormal } from './api/openMeteoClimate.js';
+import { fetchAirQuality } from './api/openMeteoAirQuality.js';
 import { assessRaceRisk } from './config/riskAssessment.js';
 import { findNextRace, isRaceDay, getRemainingRaces, daysUntilRace } from './utils/dateUtils.js';
 import { formatRelativeTime } from './utils/formatting.js';
@@ -109,11 +110,12 @@ async function fetchAllWeatherData() {
             racesToFetch.map(async (race) => {
                 const days = daysUntilRace(race);
 
-                // Fetch weather + alerts in parallel
+                // Fetch weather + alerts + climate + AQI in parallel
                 const fetches = [
                     fetchRaceWeather(race.lat, race.lon),
                     fetchNWSAlerts(race.lat, race.lon),
-                    fetchClimatePrecipNormal(race.lat, race.lon, race.dates.start)
+                    fetchClimatePrecipNormal(race.lat, race.lon, race.dates.start),
+                    fetchAirQuality(race.lat, race.lon)
                 ];
 
                 // Conditionally fetch nowcast for nearby races
@@ -121,9 +123,9 @@ async function fetchAllWeatherData() {
                     fetches.push(fetchNowcast(race.lat, race.lon));
                 }
 
-                const [weatherResult, alertsResult, climateResult, nowcastResult] = await Promise.allSettled(fetches);
+                const [weatherResult, alertsResult, climateResult, aqiResult, nowcastResult] = await Promise.allSettled(fetches);
 
-                return { race, weatherResult, alertsResult, climateResult, nowcastResult };
+                return { race, weatherResult, alertsResult, climateResult, aqiResult, nowcastResult };
             })
         );
 
@@ -131,10 +133,11 @@ async function fetchAllWeatherData() {
         const riskData = { ...store.get('riskData') };
         const alertsData = { ...store.get('alertsData') };
         const nowcastData = { ...store.get('nowcastData') };
+        const aqiData = { ...store.get('aqiData') };
 
         for (const settled of results) {
             if (settled.status !== 'fulfilled') continue;
-            const { race, weatherResult, alertsResult, climateResult, nowcastResult } = settled.value;
+            const { race, weatherResult, alertsResult, climateResult, aqiResult, nowcastResult } = settled.value;
 
             // Weather data
             if (weatherResult.status === 'fulfilled') {
@@ -167,6 +170,14 @@ async function fetchAllWeatherData() {
                 }
             }
 
+            // AQI data
+            if (aqiResult?.status === 'fulfilled') {
+                const result = aqiResult.value;
+                if (result.data) {
+                    aqiData[race.id] = result.data;
+                }
+            }
+
             // Nowcast
             if (nowcastResult?.status === 'fulfilled') {
                 const result = nowcastResult.value;
@@ -175,12 +186,12 @@ async function fetchAllWeatherData() {
                 }
             }
 
-            // Risk assessment with alerts and climate context
+            // Risk assessment with alerts, climate, and AQI context
             if (weatherData[race.id]) {
                 const alerts = alertsData[race.id]
                     ? filterAlertsForRaceWindow(alertsData[race.id].alerts, race.dates.start, race.dates.end, race.raceHours)
                     : [];
-                riskData[race.id] = assessRaceRisk(weatherData[race.id], race, alerts, climateDeparture);
+                riskData[race.id] = assessRaceRisk(weatherData[race.id], race, alerts, climateDeparture, aqiData[race.id] || null);
             }
         }
 
@@ -206,7 +217,7 @@ async function fetchAllWeatherData() {
         }
         savePreviousRiskLevels(currentLevels);
 
-        store.update({ weatherData, riskData, alertsData, nowcastData, lastFetchTime: new Date(), isLoading: false });
+        store.update({ weatherData, riskData, alertsData, nowcastData, aqiData, lastFetchTime: new Date(), isLoading: false });
         updateLastFetchDisplay();
         renderActiveRace();
         renderAllRaces(allRacesContainer, handleRaceClick);
@@ -252,6 +263,7 @@ function renderActiveRace() {
     const riskData = store.get('riskData')[race.id];
     const alertsDataForRace = store.get('alertsData')[race.id];
     const nowcastData = store.get('nowcastData')[race.id];
+    const aqiDataForRace = store.get('aqiData')[race.id];
 
     // Calculate climate departure for display
     let climateDeparture = null;
@@ -267,7 +279,7 @@ function renderActiveRace() {
     renderRiskBanner(riskContainer, riskData, race);
     renderAlertsBanner(alertsContainer, alertsDataForRace);
     renderDecisionTimeline(timelineContainer, race, riskData, weatherData);
-    renderWeatherDetails(weatherContainer, weatherData, race, nowcastData, climateDeparture);
+    renderWeatherDetails(weatherContainer, weatherData, race, nowcastData, climateDeparture, aqiDataForRace);
     renderHourlyTimeline(hourlyContainer, weatherData, race);
 
     // Share button in the risk banner header area

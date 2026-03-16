@@ -22,7 +22,7 @@ export function getNotificationPrefs() {
             return JSON.parse(stored);
         }
     } catch (e) { /* ignore */ }
-    return { enabled: false, transitions: ['toRed', 'toYellow', 'toGreen'] };
+    return { enabled: false, transitions: ['toRed', 'toOrange', 'toYellow', 'toGreen'] };
 }
 
 /**
@@ -92,7 +92,7 @@ export async function sendRiskNotification(transition, raceName) {
 
     if (Notification.permission !== 'granted') return;
 
-    const levelEmoji = { GREEN: '\u2705', YELLOW: '\u26A0\uFE0F', RED: '\uD83D\uDED1' };
+    const levelEmoji = { GREEN: '\u2705', YELLOW: '\u26A0\uFE0F', ORANGE: '\uD83D\uDFE0', RED: '\uD83D\uDED1' };
     const icon = levelEmoji[transition.to] || '';
 
     new Notification(`${icon} ${raceName} — Risk Changed`, {

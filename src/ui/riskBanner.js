@@ -1,5 +1,6 @@
 /**
  * Risk banner — color-coded overall risk with expandable factor details
+ * 4-level system: GREEN / YELLOW / ORANGE / RED per NICA guidelines
  */
 
 import { RISK_THRESHOLDS, TRAIL_THRESHOLDS } from '../config/constants.js';
@@ -19,8 +20,9 @@ export function renderRiskBanner(container, risk, race) {
         return;
     }
 
-    const { level, overall, summary, lightning, trailDamage, wind, heat,
+    const { level, overall, summary, lightning, trailDamage, wind, heat, heavyRain, aqi,
         lightningDetails, trailDamageDetails, windDetails, heatDetails,
+        heavyRainDetails, aqiDetails,
         nwsOverride, nwsOverrideEvent } = risk;
 
     const confidence = race ? getForecastConfidence(race) : null;
@@ -43,10 +45,12 @@ export function renderRiskBanner(container, risk, race) {
             ${confidence ? `<div class="confidence-tag confidence-tag--${confidence.level}">Forecast: ${confidence.label}${confidence.days > 0 ? ` (${confidence.days}-day)` : ''}</div>` : ''}
             <div class="risk-banner__details">
                 <div class="risk-banner__factors">
-                    ${renderFactor('Lightning', lightning, renderLightningBullets(lightningDetails))}
-                    ${renderFactor('Trail Damage', trailDamage, renderTrailBullets(trailDamageDetails))}
-                    ${renderFactor('Wind', wind, renderWindBullets(windDetails))}
-                    ${renderFactor('Heat', heat || 0, renderHeatBullets(heatDetails))}
+                    ${renderFactor('Lightning', lightning, renderLightningBullets(lightningDetails), lightningDetails?.nicaAction)}
+                    ${renderFactor('Heat', heat || 0, renderHeatBullets(heatDetails), heatDetails?.nicaAction)}
+                    ${renderFactor('Wind', wind, renderWindBullets(windDetails), windDetails?.nicaAction)}
+                    ${renderFactor('Heavy Rain', heavyRain || 0, renderHeavyRainBullets(heavyRainDetails), heavyRainDetails?.nicaAction)}
+                    ${renderFactor('Trail Damage', trailDamage, renderTrailBullets(trailDamageDetails), trailDamageDetails?.nicaAction)}
+                    ${renderFactor('Air Quality', aqi || 0, renderAQIBullets(aqiDetails), aqiDetails?.nicaAction)}
                 </div>
             </div>
             <div class="risk-banner__expand-hint" id="expand-hint">
@@ -68,10 +72,18 @@ export function renderRiskBanner(container, risk, race) {
     });
 }
 
-function renderFactor(label, score, bullets) {
-    const colorClass = score > RISK_THRESHOLDS.YELLOW_MAX ? 'red'
+function renderFactor(label, score, bullets, nicaAction) {
+    const colorClass = score > RISK_THRESHOLDS.ORANGE_MAX ? 'red'
+        : score > RISK_THRESHOLDS.YELLOW_MAX ? 'orange'
         : score > RISK_THRESHOLDS.GREEN_MAX ? 'yellow'
         : 'green';
+
+    // Show NICA action text for ORANGE and RED levels
+    let actionHtml = '';
+    if (nicaAction && score > RISK_THRESHOLDS.YELLOW_MAX) {
+        const actionClass = score > RISK_THRESHOLDS.ORANGE_MAX ? 'red' : 'orange';
+        actionHtml = `<div class="risk-factor__nica-action risk-factor__nica-action--${actionClass}">${nicaAction}</div>`;
+    }
 
     return `
         <div class="risk-factor">
@@ -81,6 +93,7 @@ function renderFactor(label, score, bullets) {
             </div>
             <div class="risk-factor__value">${score}</div>
             ${bullets ? `<div class="risk-factor__bullets">${bullets}</div>` : ''}
+            ${actionHtml}
         </div>`;
 }
 
@@ -132,12 +145,39 @@ function renderWindBullets(details) {
 function renderHeatBullets(details) {
     if (!details) return '';
     const items = [];
-    if (details.peakWBGT_F != null && details.peakWBGT_F > 0) {
-        items.push(`Peak WBGT: ${details.peakWBGT_F}&deg;F`);
+    if (details.peakHeatIndex_F != null && details.peakHeatIndex_F > 0) {
+        items.push(`Peak Heat Index: ${details.peakHeatIndex_F}&deg;F`);
     }
     if (details.peakHour) {
         const timeStr = details.peakHour.toLocaleTimeString('en-US', { hour: 'numeric', hour12: true });
         items.push(`Peak heat at ${timeStr}`);
+    }
+    return items.map(t => `<div class="risk-factor__bullet">${t}</div>`).join('');
+}
+
+function renderHeavyRainBullets(details) {
+    if (!details) return '';
+    const items = [];
+    if (details.maxRainRateMmHr > 0) {
+        const inHr = (details.maxRainRateMmHr / 25.4).toFixed(2);
+        items.push(`Max rain rate: ${details.maxRainRateMmHr.toFixed(1)} mm/hr (${inHr} in/hr)`);
+    }
+    if (details.maxRainRateHour) {
+        const timeStr = details.maxRainRateHour.toLocaleTimeString('en-US', { hour: 'numeric', hour12: true });
+        items.push(`Peak at ${timeStr}`);
+    }
+    return items.map(t => `<div class="risk-factor__bullet">${t}</div>`).join('');
+}
+
+function renderAQIBullets(details) {
+    if (!details) return '';
+    const items = [];
+    if (details.peakAQI > 0) {
+        items.push(`Peak AQI: ${details.peakAQI}`);
+    }
+    if (details.peakHour) {
+        const timeStr = details.peakHour.toLocaleTimeString('en-US', { hour: 'numeric', hour12: true });
+        items.push(`Peak at ${timeStr}`);
     }
     return items.map(t => `<div class="risk-factor__bullet">${t}</div>`).join('');
 }
