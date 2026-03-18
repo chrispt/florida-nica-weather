@@ -13,7 +13,24 @@ import { renderInfoButton, setupInfoButtons } from './infoButton.js';
 
 export function renderWeatherDetails(container, weatherData, race, nowcastData = null, climateDeparture = null, aqiData = null) {
     if (!weatherData || !weatherData.hourly || weatherData.hourly.length === 0) {
-        container.innerHTML = '<div class="loading"><div class="loading__spinner"></div><span>Loading weather data...</span></div>';
+        container.innerHTML = `
+            <div class="widget-grid">
+                <div class="skeleton widget--full">
+                    <div class="skeleton__line skeleton__line--heading"></div>
+                    <div class="skeleton__line skeleton__line--long"></div>
+                    <div class="skeleton__line skeleton__line--medium"></div>
+                </div>
+                <div class="skeleton">
+                    <div class="skeleton__line skeleton__line--short"></div>
+                    <div class="skeleton__line skeleton__line--long"></div>
+                    <div class="skeleton__line skeleton__line--medium"></div>
+                </div>
+                <div class="skeleton">
+                    <div class="skeleton__line skeleton__line--short"></div>
+                    <div class="skeleton__line skeleton__line--long"></div>
+                    <div class="skeleton__line skeleton__line--medium"></div>
+                </div>
+            </div>`;
         return;
     }
 
@@ -57,6 +74,7 @@ export function renderWeatherDetails(container, weatherData, race, nowcastData =
         </div>`;
 
     setupInfoButtons(container);
+    setupCollapsibleWidgets(container);
 }
 
 function renderRaceDaySummaryWidget(raceDayCards, race) {
@@ -112,16 +130,18 @@ function renderCurrentConditions(hour) {
         : '';
 
     return `
-        <div class="widget">
-            <div class="widget__title">Current Conditions ${renderInfoButton('currentConditions')}</div>
-            <div style="display: flex; align-items: center; gap: var(--space-md);">
-                <span style="font-size: 2.5rem;">${icon.icon}</span>
-                <div>
-                    <div class="widget__value">${formatTemperature(hour.temperature)}</div>
-                    <div class="widget__detail">${desc}</div>
-                    ${feelsLike}
-                    <div class="widget__detail">Humidity: ${formatPercent(hour.humidity)}</div>
-                    ${uvDisplay}
+        <div class="widget widget--collapsible">
+            <div class="widget__title"><button class="widget__title-btn" type="button">Current Conditions ${renderInfoButton('currentConditions')}<span class="widget__collapse-icon">&#x25BC;</span></button></div>
+            <div class="widget__body">
+                <div style="display: flex; align-items: center; gap: var(--space-md);">
+                    <span style="font-size: 2.5rem;">${icon.icon}</span>
+                    <div>
+                        <div class="widget__value">${formatTemperature(hour.temperature)}</div>
+                        <div class="widget__detail">${desc}</div>
+                        ${feelsLike}
+                        <div class="widget__detail">Humidity: ${formatPercent(hour.humidity)}</div>
+                        ${uvDisplay}
+                    </div>
                 </div>
             </div>
         </div>`;
@@ -151,16 +171,18 @@ function renderRainfallWidget(rainHistory, weatherData, race, climateDeparture =
     }
 
     return `
-        <div class="widget">
-            <div class="widget__title">7-Day Rainfall ${renderInfoButton('rainfallHistory')}</div>
-            <div class="widget__value">${formatPrecipitation(totalPast)}</div>
-            <div class="widget__detail">Past 7 days cumulative</div>
-            ${departureHtml}
-            <div class="rain-chart">${bars}</div>
-            <div class="rain-chart__labels">
-                <span>7 days ago</span>
-                <span>Today</span>
-                <span>Race day</span>
+        <div class="widget widget--collapsible">
+            <div class="widget__title"><button class="widget__title-btn" type="button">7-Day Rainfall ${renderInfoButton('rainfallHistory')}<span class="widget__collapse-icon">&#x25BC;</span></button></div>
+            <div class="widget__body">
+                <div class="widget__value">${formatPrecipitation(totalPast)}</div>
+                <div class="widget__detail">Past 7 days cumulative</div>
+                ${departureHtml}
+                <div class="rain-chart">${bars}</div>
+                <div class="rain-chart__labels">
+                    <span>7 days ago</span>
+                    <span>Today</span>
+                    <span>Race day</span>
+                </div>
             </div>
         </div>`;
 }
@@ -177,23 +199,25 @@ function renderSoilMoistureWidget(soil) {
     const deepValue = soil ? formatSoilMoisture(soil.soilMoisture7to28) : 'N/A';
 
     return `
-        <div class="widget">
-            <div class="widget__title">Soil Moisture ${renderInfoButton('soilMoisture')}</div>
-            <div class="widget__value">${displayVal}</div>
-            <div class="widget__detail">Surface (0-7cm)</div>
-            <div class="soil-meter">
-                <div class="soil-meter__track">
-                    <div class="soil-meter__fill" style="width: ${pct}%; background: ${fillColor};"></div>
+        <div class="widget widget--collapsible">
+            <div class="widget__title"><button class="widget__title-btn" type="button">Soil Moisture ${renderInfoButton('soilMoisture')}<span class="widget__collapse-icon">&#x25BC;</span></button></div>
+            <div class="widget__body">
+                <div class="widget__value">${displayVal}</div>
+                <div class="widget__detail">Surface (0-7cm)</div>
+                <div class="soil-meter">
+                    <div class="soil-meter__track">
+                        <div class="soil-meter__fill" style="width: ${pct}%; background: ${fillColor};"></div>
+                    </div>
+                    <div class="soil-meter__thresholds">
+                        <span>Dry</span>
+                        <span>Concern (${(TRAIL_THRESHOLDS.SOIL_MOISTURE_HIGH * 100).toFixed(0)}%)</span>
+                        <span>Saturated</span>
+                    </div>
                 </div>
-                <div class="soil-meter__thresholds">
-                    <span>Dry</span>
-                    <span>Concern (${(TRAIL_THRESHOLDS.SOIL_MOISTURE_HIGH * 100).toFixed(0)}%)</span>
-                    <span>Saturated</span>
+                <div class="widget__row" style="margin-top: var(--space-sm);">
+                    <span class="widget__row-label">Deep (7-28cm)</span>
+                    <span class="widget__row-value">${deepValue}</span>
                 </div>
-            </div>
-            <div class="widget__row" style="margin-top: var(--space-sm);">
-                <span class="widget__row-label">Deep (7-28cm)</span>
-                <span class="widget__row-value">${deepValue}</span>
             </div>
         </div>`;
 }
@@ -202,23 +226,25 @@ function renderWindWidget(currentHour, raceDaySummary) {
     if (!currentHour) return '';
 
     return `
-        <div class="widget">
-            <div class="widget__title">Wind ${renderInfoButton('wind')}</div>
-            <div class="widget__value">${formatWindSpeed(currentHour.windSpeed)}</div>
-            <div class="widget__detail">${getWindDirectionLabel(currentHour.windDirection)} (${Math.round(currentHour.windDirection)}°)</div>
-            <div class="widget__row">
-                <span class="widget__row-label">Gusts</span>
-                <span class="widget__row-value">${formatWindSpeed(currentHour.windGusts)}</span>
+        <div class="widget widget--collapsible">
+            <div class="widget__title"><button class="widget__title-btn" type="button">Wind ${renderInfoButton('wind')}<span class="widget__collapse-icon">&#x25BC;</span></button></div>
+            <div class="widget__body">
+                <div class="widget__value">${formatWindSpeed(currentHour.windSpeed)}</div>
+                <div class="widget__detail">${getWindDirectionLabel(currentHour.windDirection)} (${Math.round(currentHour.windDirection)}°)</div>
+                <div class="widget__row">
+                    <span class="widget__row-label">Gusts</span>
+                    <span class="widget__row-value">${formatWindSpeed(currentHour.windGusts)}</span>
+                </div>
+                ${raceDaySummary ? `
+                <div class="widget__row">
+                    <span class="widget__row-label">Race day max</span>
+                    <span class="widget__row-value">${formatWindSpeed(raceDaySummary.maxWind)}</span>
+                </div>
+                <div class="widget__row">
+                    <span class="widget__row-label">Race day gusts</span>
+                    <span class="widget__row-value">${formatWindSpeed(raceDaySummary.maxGust)}</span>
+                </div>` : ''}
             </div>
-            ${raceDaySummary ? `
-            <div class="widget__row">
-                <span class="widget__row-label">Race day max</span>
-                <span class="widget__row-value">${formatWindSpeed(raceDaySummary.maxWind)}</span>
-            </div>
-            <div class="widget__row">
-                <span class="widget__row-label">Race day gusts</span>
-                <span class="widget__row-value">${formatWindSpeed(raceDaySummary.maxGust)}</span>
-            </div>` : ''}
         </div>`;
 }
 
@@ -303,6 +329,25 @@ function getRaceDaySummary(weatherData, race) {
         maxTemp: Math.max(...raceHours.map(h => h.temperature)),
         minTemp: Math.min(...raceHours.map(h => h.temperature))
     };
+}
+
+/**
+ * On mobile, set up collapsible widget toggle behavior
+ */
+function setupCollapsibleWidgets(container) {
+    if (window.innerWidth > 640) return;
+
+    container.querySelectorAll('.widget--collapsible').forEach(widget => {
+        const btn = widget.querySelector('.widget__title-btn');
+        if (!btn) return;
+
+        btn.addEventListener('click', (e) => {
+            // Don't toggle if clicking the info button inside the title
+            if (e.target.closest('.info-btn')) return;
+
+            widget.classList.toggle('widget--collapsed');
+        });
+    });
 }
 
 function getRaceDayCards(weatherData, race) {

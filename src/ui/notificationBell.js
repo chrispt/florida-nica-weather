@@ -31,13 +31,13 @@ export function renderNotificationBell(container) {
     const badgeCount = recentTransitions.length;
 
     container.innerHTML = `
-        <div class="notif-bell" id="notif-bell-toggle">
+        <button class="notif-bell" id="notif-bell-toggle" type="button" aria-label="Notifications${badgeCount > 0 ? ` (${badgeCount} new)` : ''}" aria-expanded="false" aria-controls="notif-dropdown">
             <svg class="notif-bell__icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
                 <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
             </svg>
             ${badgeCount > 0 ? `<span class="notif-bell__badge">${badgeCount}</span>` : ''}
-        </div>
+        </button>
         <div class="notif-dropdown hidden" id="notif-dropdown">
             <div class="notif-dropdown__header">Notifications</div>
             <label class="notif-dropdown__toggle-row">
@@ -82,12 +82,18 @@ export function renderNotificationBell(container) {
     bell.addEventListener('click', (e) => {
         e.stopPropagation();
         dropdown.classList.toggle('hidden');
+        const isOpen = !dropdown.classList.contains('hidden');
+        bell.setAttribute('aria-expanded', isOpen);
     });
 
     // Close dropdown on outside click
-    document.addEventListener('click', () => {
-        dropdown.classList.add('hidden');
-    }, { once: true });
+    function closeDropdown(e) {
+        if (!dropdown.contains(e.target) && e.target !== bell) {
+            dropdown.classList.add('hidden');
+            bell.setAttribute('aria-expanded', 'false');
+        }
+    }
+    document.addEventListener('click', closeDropdown);
 
     // Prevent dropdown click from closing
     dropdown.addEventListener('click', (e) => e.stopPropagation());

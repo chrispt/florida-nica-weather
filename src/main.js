@@ -44,6 +44,39 @@ const unitToggleContainer = document.getElementById('unit-toggle');
 
 let refreshTimer = null;
 
+// Back to top button
+const backToTopBtn = createBackToTopButton();
+document.getElementById('app').appendChild(backToTopBtn);
+
+/**
+ * Create the floating back-to-top button
+ */
+function createBackToTopButton() {
+    const btn = document.createElement('button');
+    btn.className = 'back-to-top';
+    btn.setAttribute('aria-label', 'Back to top');
+    btn.setAttribute('type', 'button');
+    btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 15l-6-6-6 6"/></svg>`;
+
+    btn.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    // Show/hide based on scroll position
+    let ticking = false;
+    window.addEventListener('scroll', () => {
+        if (!ticking) {
+            requestAnimationFrame(() => {
+                btn.classList.toggle('back-to-top--visible', window.scrollY > 400);
+                ticking = false;
+            });
+            ticking = true;
+        }
+    });
+
+    return btn;
+}
+
 /**
  * Initialize the app
  */
@@ -327,7 +360,29 @@ function updateLastFetchDisplay() {
 
 function showLoading(show) {
     if (errorContainer) errorContainer.innerHTML = '';
-    // Loading state is visual — widgets show their own spinners
+
+    if (show) {
+        // Show skeleton loaders for sections that haven't loaded yet
+        if (!store.get('weatherData') || Object.keys(store.get('weatherData')).length === 0) {
+            if (riskContainer) {
+                riskContainer.innerHTML = `
+                    <div class="skeleton" style="border: 2px solid var(--color-border); margin-bottom: var(--space-lg);">
+                        <div class="skeleton__line skeleton__line--heading"></div>
+                        <div class="skeleton__line skeleton__line--long"></div>
+                        <div class="skeleton__line skeleton__line--medium"></div>
+                    </div>`;
+            }
+            if (timelineContainer) {
+                timelineContainer.innerHTML = `
+                    <div class="skeleton">
+                        <div class="skeleton__line skeleton__line--heading"></div>
+                        <div class="skeleton__line skeleton__line--long"></div>
+                        <div class="skeleton__line skeleton__line--short"></div>
+                        <div class="skeleton__line skeleton__line--medium"></div>
+                    </div>`;
+            }
+        }
+    }
 }
 
 function showError(message) {

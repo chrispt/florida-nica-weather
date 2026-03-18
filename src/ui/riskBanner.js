@@ -32,7 +32,7 @@ export function renderRiskBanner(container, risk, race) {
         : '';
 
     container.innerHTML = `
-        <div class="risk-banner risk-banner--${level}" id="risk-banner-toggle">
+        <div class="risk-banner risk-banner--${level}" id="risk-banner-toggle" role="region" aria-label="Race risk assessment">
             <div class="risk-banner__header">
                 <span class="risk-banner__level">${level} — Race Risk</span>
                 <span class="risk-banner__score-group">
@@ -43,7 +43,7 @@ export function renderRiskBanner(container, risk, race) {
             <div class="risk-banner__summary">${summary}</div>
             ${nwsOverrideBadge}
             ${confidence ? `<div class="confidence-tag confidence-tag--${confidence.level}">Forecast: ${confidence.label}${confidence.days > 0 ? ` (${confidence.days}-day)` : ''}</div>` : ''}
-            <div class="risk-banner__details">
+            <div class="risk-banner__details" id="risk-details">
                 <div class="risk-banner__factors">
                     ${renderFactor('Lightning', lightning, renderLightningBullets(lightningDetails), lightningDetails?.nicaAction)}
                     ${renderFactor('Heat', heat || 0, renderHeatBullets(heatDetails), heatDetails?.nicaAction)}
@@ -53,22 +53,25 @@ export function renderRiskBanner(container, risk, race) {
                     ${renderFactor('Air Quality', aqi || 0, renderAQIBullets(aqiDetails), aqiDetails?.nicaAction)}
                 </div>
             </div>
-            <div class="risk-banner__expand-hint" id="expand-hint">
-                <span>Click for details</span>
+            <button class="risk-banner__expand-hint" id="expand-hint" type="button" aria-expanded="false" aria-controls="risk-details">
+                <span>Tap for risk details</span>
                 <span class="risk-banner__chevron">&#x25BC;</span>
-            </div>
+            </button>
         </div>`;
 
     // Info buttons (must be set up before the banner click handler)
     setupInfoButtons(container);
 
-    // Toggle expand
+    // Toggle expand — only via the button, not the entire banner
     const banner = container.querySelector('#risk-banner-toggle');
-    banner.addEventListener('click', () => {
+    const expandBtn = container.querySelector('#expand-hint');
+    expandBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
         banner.classList.toggle('expanded');
-        const hint = banner.querySelector('#expand-hint');
-        const hintText = hint.querySelector('span:first-child');
-        hintText.textContent = banner.classList.contains('expanded') ? 'Click to collapse' : 'Click for details';
+        const isExpanded = banner.classList.contains('expanded');
+        const hintText = expandBtn.querySelector('span:first-child');
+        hintText.textContent = isExpanded ? 'Tap to collapse' : 'Tap for risk details';
+        expandBtn.setAttribute('aria-expanded', isExpanded);
     });
 }
 

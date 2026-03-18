@@ -39,33 +39,35 @@ export function renderAQIWidget(aqiData, race) {
     const orangePos = (AQI_THRESHOLDS.ORANGE_MAX / gaugeMax) * 100;
 
     return `
-        <div class="widget">
-            <div class="widget__title">Air Quality (AQI) ${renderInfoButton('airQuality')}</div>
-            <div class="wbgt-value" style="color: ${category.color};">
-                <span class="widget__value">${peak.aqi}</span>
-                <span class="wbgt-category" style="background: ${category.color}; color: white;">${category.label}</span>
-            </div>
-            <div class="widget__detail">Peak at ${peakHourStr}</div>
-            ${category.nicaAction ? `<div class="widget__detail" style="font-weight:600; margin-top:var(--space-xs);">NICA: ${category.nicaAction}</div>` : ''}
-
-            <div class="wbgt-gauge">
-                <div class="wbgt-gauge__track">
-                    <div class="wbgt-gauge__zone wbgt-gauge__zone--green" style="width: ${greenPos}%"></div>
-                    <div class="wbgt-gauge__zone wbgt-gauge__zone--yellow" style="width: ${yellowPos - greenPos}%"></div>
-                    <div class="wbgt-gauge__zone wbgt-gauge__zone--orange" style="width: ${orangePos - yellowPos}%"></div>
-                    <div class="wbgt-gauge__zone wbgt-gauge__zone--red" style="width: ${100 - orangePos}%"></div>
-                    <div class="wbgt-gauge__marker" style="left: ${gaugePos}%"></div>
+        <div class="widget widget--collapsible">
+            <div class="widget__title"><button class="widget__title-btn" type="button">Air Quality (AQI) ${renderInfoButton('airQuality')}<span class="widget__collapse-icon">&#x25BC;</span></button></div>
+            <div class="widget__body">
+                <div class="wbgt-value" style="color: ${category.color};">
+                    <span class="widget__value">${peak.aqi}</span>
+                    <span class="wbgt-category" style="background: ${category.color}; color: white;">${category.label}</span>
                 </div>
-                <div class="wbgt-gauge__labels">
-                    <span>0</span>
-                    <span>${AQI_THRESHOLDS.GREEN_MAX}</span>
-                    <span>${AQI_THRESHOLDS.YELLOW_MAX}</span>
-                    <span>${AQI_THRESHOLDS.ORANGE_MAX}</span>
-                    <span>${gaugeMax}</span>
-                </div>
-            </div>
+                <div class="widget__detail">Peak at ${peakHourStr}</div>
+                ${category.nicaAction ? `<div class="widget__detail" style="font-weight:600; margin-top:var(--space-xs);">NICA: ${category.nicaAction}</div>` : ''}
 
-            <div class="wbgt-recommendation">${category.recommendation}</div>
+                <div class="wbgt-gauge">
+                    <div class="wbgt-gauge__track">
+                        <div class="wbgt-gauge__zone wbgt-gauge__zone--green" style="width: ${greenPos}%"></div>
+                        <div class="wbgt-gauge__zone wbgt-gauge__zone--yellow" style="width: ${yellowPos - greenPos}%"></div>
+                        <div class="wbgt-gauge__zone wbgt-gauge__zone--orange" style="width: ${orangePos - yellowPos}%"></div>
+                        <div class="wbgt-gauge__zone wbgt-gauge__zone--red" style="width: ${100 - orangePos}%"></div>
+                        <div class="wbgt-gauge__marker" style="left: ${gaugePos}%"></div>
+                    </div>
+                    <div class="wbgt-gauge__labels">
+                        <span>0</span>
+                        <span>${AQI_THRESHOLDS.GREEN_MAX}</span>
+                        <span>${AQI_THRESHOLDS.YELLOW_MAX}</span>
+                        <span>${AQI_THRESHOLDS.ORANGE_MAX}</span>
+                        <span>${gaugeMax}</span>
+                    </div>
+                </div>
+
+                <div class="wbgt-recommendation">${category.recommendation}</div>
+            </div>
         </div>`;
 }
 

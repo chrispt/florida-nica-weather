@@ -55,6 +55,10 @@ export function renderHourlyTimeline(container, weatherData, race) {
                     <div class="timeline__detail-label"></div>
                 </div>
             `).join('')}
+            <div class="timeline__scroll-hint" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14m-4-4 4 4-4 4"/></svg>
+                <span>Swipe to see more hours</span>
+            </div>
         </div>`;
 
     // Info buttons
@@ -108,8 +112,10 @@ function renderHourCell(hour, race) {
     const fullDateTime = formatFullDateTime(hour.time);
 
     return `
-        <div class="timeline__hour ${isRaceHour ? 'timeline__hour--race' : ''} ${hazardClass}"
+        <button class="timeline__hour ${isRaceHour ? 'timeline__hour--race' : ''} ${hazardClass}"
+             type="button"
              data-datetime="${hour.time.toISOString()}"
+             aria-label="${fullDateTime}, ${formatTemperature(hour.temperature)}"
              title="${fullDateTime}">
             <span class="timeline__hour-time">${timeStr}</span>
             <span class="timeline__hour-icon">${icon.icon}</span>
@@ -117,7 +123,7 @@ function renderHourCell(hour, race) {
             ${hour.cape != null && hour.cape > CAPE_THRESHOLDS.HIGH ? `<span class="timeline__hour-cape" title="CAPE: ${Math.round(hour.cape)} J/kg">&#x26A1;</span>` : ''}
             ${precipStr ? `<span class="timeline__hour-precip">${precipStr}</span>` : ''}
             <span class="timeline__hour-wind">${formatWindSpeed(hour.windSpeed)}</span>
-        </div>`;
+        </button>`;
 }
 
 function groupByDay(hours) {

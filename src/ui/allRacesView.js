@@ -29,7 +29,7 @@ export function renderAllRaces(container, onRaceClick) {
         else statusText = `${days} days away`;
 
         return `
-            <div class="race-card${statusClass}" data-race-id="${race.id}">
+            <button class="race-card${statusClass}" data-race-id="${race.id}" type="button" aria-label="View ${race.name} weather details">
                 <div class="race-card__header">
                     <span class="race-card__number">${race.id}</span>
                     ${badge}
@@ -38,7 +38,7 @@ export function renderAllRaces(container, onRaceClick) {
                 <div class="race-card__venue">${race.venue} — ${race.city}</div>
                 <div class="race-card__dates">${formatRaceDates(race)}</div>
                 <div class="race-card__status">${statusText}</div>
-            </div>`;
+            </button>`;
     }).join('');
 
     container.innerHTML = `
@@ -47,8 +47,8 @@ export function renderAllRaces(container, onRaceClick) {
             <div class="race-cards">${cards}</div>
         </div>`;
 
-    // Click handlers
-    container.querySelectorAll('.race-card:not(.race-card--past)').forEach(card => {
+    // Click handlers — all races are clickable, including past ones
+    container.querySelectorAll('.race-card').forEach(card => {
         card.addEventListener('click', () => {
             const raceId = parseInt(card.dataset.raceId, 10);
             if (onRaceClick) onRaceClick(raceId);

@@ -41,33 +41,35 @@ export function renderHeatSafetyWidget(raceHourlyData) {
         : '';
 
     return `
-        <div class="widget">
-            <div class="widget__title">Heat Safety (Heat Index) ${renderInfoButton('heatSafety')}</div>
-            <div class="wbgt-value" style="color: ${category.color};">
-                <span class="widget__value">${Math.round(peakHI.hiF)}&deg;F</span>
-                <span class="wbgt-category" style="background: ${category.color}; color: white;">${category.label}</span>
-            </div>
-            <div class="widget__detail">Peak at ${peakHourStr}</div>
-            ${nicaActionHtml}
-
-            <div class="wbgt-gauge">
-                <div class="wbgt-gauge__track">
-                    <div class="wbgt-gauge__zone wbgt-gauge__zone--green" style="width: ${greenPos}%"></div>
-                    <div class="wbgt-gauge__zone wbgt-gauge__zone--yellow" style="width: ${yellowPos - greenPos}%"></div>
-                    <div class="wbgt-gauge__zone wbgt-gauge__zone--orange" style="width: ${orangePos - yellowPos}%"></div>
-                    <div class="wbgt-gauge__zone wbgt-gauge__zone--red" style="width: ${100 - orangePos}%"></div>
-                    <div class="wbgt-gauge__marker" style="left: ${gaugePos}%"></div>
+        <div class="widget widget--collapsible">
+            <div class="widget__title"><button class="widget__title-btn" type="button">Heat Safety (Heat Index) ${renderInfoButton('heatSafety')}<span class="widget__collapse-icon">&#x25BC;</span></button></div>
+            <div class="widget__body">
+                <div class="wbgt-value" style="color: ${category.color};">
+                    <span class="widget__value">${Math.round(peakHI.hiF)}&deg;F</span>
+                    <span class="wbgt-category" style="background: ${category.color}; color: white;">${category.label}</span>
                 </div>
-                <div class="wbgt-gauge__labels">
-                    <span>${gaugeMin}&deg;F</span>
-                    <span>${HEAT_INDEX_THRESHOLDS.GREEN_MAX_F}&deg;</span>
-                    <span>${HEAT_INDEX_THRESHOLDS.YELLOW_MAX_F}&deg;</span>
-                    <span>${HEAT_INDEX_THRESHOLDS.ORANGE_MAX_F}&deg;</span>
-                    <span>${gaugeMax}&deg;F</span>
-                </div>
-            </div>
+                <div class="widget__detail">Peak at ${peakHourStr}</div>
+                ${nicaActionHtml}
 
-            <div class="wbgt-recommendation">${category.recommendation}</div>
-            <div class="wbgt-disclaimer">Estimated Heat Index — not a substitute for on-site measurement</div>
+                <div class="wbgt-gauge">
+                    <div class="wbgt-gauge__track">
+                        <div class="wbgt-gauge__zone wbgt-gauge__zone--green" style="width: ${greenPos}%"></div>
+                        <div class="wbgt-gauge__zone wbgt-gauge__zone--yellow" style="width: ${yellowPos - greenPos}%"></div>
+                        <div class="wbgt-gauge__zone wbgt-gauge__zone--orange" style="width: ${orangePos - yellowPos}%"></div>
+                        <div class="wbgt-gauge__zone wbgt-gauge__zone--red" style="width: ${100 - orangePos}%"></div>
+                        <div class="wbgt-gauge__marker" style="left: ${gaugePos}%"></div>
+                    </div>
+                    <div class="wbgt-gauge__labels">
+                        <span>${gaugeMin}&deg;F</span>
+                        <span>${HEAT_INDEX_THRESHOLDS.GREEN_MAX_F}&deg;</span>
+                        <span>${HEAT_INDEX_THRESHOLDS.YELLOW_MAX_F}&deg;</span>
+                        <span>${HEAT_INDEX_THRESHOLDS.ORANGE_MAX_F}&deg;</span>
+                        <span>${gaugeMax}&deg;F</span>
+                    </div>
+                </div>
+
+                <div class="wbgt-recommendation">${category.recommendation}</div>
+                <div class="wbgt-disclaimer">Estimated Heat Index — not a substitute for on-site measurement</div>
+            </div>
         </div>`;
 }
