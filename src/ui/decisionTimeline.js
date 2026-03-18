@@ -101,7 +101,7 @@ export function renderDecisionTimeline(container, race, riskData, weatherData) {
                 <div class="dt-milestone__content">
                     <div class="dt-milestone__label">${m.label}</div>
                     ${snapshotHtml}
-                    <div class="dt-milestone__action">${m.action}</div>
+                    <div class="dt-milestone__action" title="${m.action}">${m.action}</div>
                 </div>
             </div>`;
     }).join('');

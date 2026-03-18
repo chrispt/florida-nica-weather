@@ -4,40 +4,58 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Race weather dashboard for Florida NICA mountain bike season — lightning, trail conditions, and risk assessment">
-    <meta name="theme-color" content="#0f172a">
+    <meta name="theme-color" content="#0b1120">
     <title>Florida NICA Race Weather</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="/styles/base.css">
     <link rel="stylesheet" href="/styles/main.css">
 </head>
 <body>
     <div class="app" id="app">
-        <!-- Header -->
-        <header class="header">
+        <!-- Header — sticky -->
+        <header class="header" id="main-header">
             <div class="header__brand">
                 <h1 class="header__title">Florida <span class="header__accent">NICA</span> Race Weather</h1>
+            </div>
+            <div class="header__center">
+                <div id="race-selector"></div>
             </div>
             <div class="header__meta">
                 <div id="unit-toggle"></div>
                 <div id="notification-bell"></div>
                 <span id="last-update"></span>
-                <button class="header__refresh-btn" id="refresh-btn">Refresh</button>
+                <button class="header__refresh-btn" id="refresh-btn" aria-label="Refresh weather data">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                </button>
             </div>
         </header>
 
         <!-- Error container -->
         <div id="error-container"></div>
 
-        <!-- Hero: next race info + countdown -->
-        <div id="hero"></div>
-
-        <!-- Risk banner -->
-        <div id="risk-banner"></div>
+        <!-- Above the fold: Hero + Risk side by side -->
+        <div class="above-fold" id="above-fold">
+            <div id="hero"></div>
+            <div id="risk-banner"></div>
+        </div>
 
         <!-- NWS Alerts -->
         <div id="nws-alerts"></div>
 
-        <!-- Weather policy -->
+        <!-- Decision timeline — horizontal stepper -->
+        <div id="decision-timeline"></div>
+
+        <!-- Weather detail widgets -->
+        <div id="weather-details"></div>
+
+        <!-- Hourly timeline -->
+        <div id="hourly-timeline"></div>
+
+        <!-- Weather policy — collapsed by default -->
         <details class="policy-section">
             <summary class="policy-section__toggle">NICA Weather Policy</summary>
             <div class="policy-section__content">
@@ -55,16 +73,7 @@
             </div>
         </details>
 
-        <!-- Decision timeline -->
-        <div id="decision-timeline"></div>
-
-        <!-- Weather detail widgets -->
-        <div id="weather-details"></div>
-
-        <!-- Hourly timeline -->
-        <div id="hourly-timeline"></div>
-
-        <!-- All races grid -->
+        <!-- All races — horizontal strip -->
         <div id="all-races"></div>
 
         <!-- Footer -->

@@ -21,6 +21,7 @@ import { renderDecisionTimeline } from './ui/decisionTimeline.js';
 import { renderShareButton, updateURLHash, readRaceFromURL } from './ui/shareStatus.js';
 import { renderNotificationBell, addRecentTransition } from './ui/notificationBell.js';
 import { renderUnitToggle } from './ui/unitToggle.js';
+import { renderRaceSelector } from './ui/raceSelector.js';
 import {
     initNotifications, checkForRiskTransitions,
     sendRiskNotification, shouldNotify,
@@ -41,6 +42,7 @@ const errorContainer = document.getElementById('error-container');
 const refreshBtn = document.getElementById('refresh-btn');
 const notifBellContainer = document.getElementById('notification-bell');
 const unitToggleContainer = document.getElementById('unit-toggle');
+const raceSelectorContainer = document.getElementById('race-selector');
 
 let refreshTimer = null;
 
@@ -108,6 +110,9 @@ async function init() {
         renderAllRaces(allRacesContainer, handleRaceClick);
     });
 
+    // Race selector in header
+    renderRaceSelector(raceSelectorContainer, handleRaceClick);
+
     // Wire up refresh button
     refreshBtn?.addEventListener('click', () => fetchAllWeatherData());
 
@@ -132,7 +137,7 @@ async function fetchAllWeatherData() {
 
     if (refreshBtn) {
         refreshBtn.disabled = true;
-        refreshBtn.textContent = 'Refreshing...';
+        refreshBtn.classList.add('spinning');
     }
 
     try {
@@ -254,6 +259,7 @@ async function fetchAllWeatherData() {
         updateLastFetchDisplay();
         renderActiveRace();
         renderAllRaces(allRacesContainer, handleRaceClick);
+        renderRaceSelector(raceSelectorContainer, handleRaceClick);
         renderNotificationBell(notifBellContainer);
 
     } catch (err) {
@@ -266,7 +272,7 @@ async function fetchAllWeatherData() {
 
     if (refreshBtn) {
         refreshBtn.disabled = false;
-        refreshBtn.textContent = 'Refresh';
+        refreshBtn.classList.remove('spinning');
     }
 }
 
@@ -326,6 +332,7 @@ function handleRaceClick(raceId) {
     store.set('activeRaceId', raceId);
     renderActiveRace();
     renderAllRaces(allRacesContainer, handleRaceClick);
+    renderRaceSelector(raceSelectorContainer, handleRaceClick);
 
     // Scroll to top
     window.scrollTo({ top: 0, behavior: 'smooth' });
