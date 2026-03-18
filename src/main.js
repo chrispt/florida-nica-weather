@@ -22,6 +22,7 @@ import { renderShareButton, updateURLHash, readRaceFromURL } from './ui/shareSta
 import { renderNotificationBell, addRecentTransition } from './ui/notificationBell.js';
 import { renderUnitToggle } from './ui/unitToggle.js';
 import { renderRaceSelector } from './ui/raceSelector.js';
+import { initTheme, renderThemeToggle } from './ui/themeToggle.js';
 import {
     initNotifications, checkForRiskTransitions,
     sendRiskNotification, shouldNotify,
@@ -43,6 +44,7 @@ const refreshBtn = document.getElementById('refresh-btn');
 const notifBellContainer = document.getElementById('notification-bell');
 const unitToggleContainer = document.getElementById('unit-toggle');
 const raceSelectorContainer = document.getElementById('race-selector');
+const themeToggleContainer = document.getElementById('theme-toggle');
 
 let refreshTimer = null;
 
@@ -83,6 +85,10 @@ function createBackToTopButton() {
  * Initialize the app
  */
 async function init() {
+    // Initialize theme (dark/light/auto)
+    initTheme();
+    renderThemeToggle(themeToggleContainer);
+
     // Check URL hash for deep-linked race
     const hashRaceId = readRaceFromURL();
 
