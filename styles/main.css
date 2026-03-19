@@ -1968,3 +1968,223 @@
         display: none !important;
     }
 }
+
+/* ==================== LIGHTNING MONITOR ==================== */
+
+.lightning-monitor {
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: var(--radius-lg);
+    padding: var(--space-md);
+    border: 2px solid var(--glass-border);
+    margin-bottom: var(--space-md);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.lightning-monitor--active {
+    border-color: var(--risk-red);
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.3), inset 0 0 20px rgba(239, 68, 68, 0.05);
+    animation: lightning-pulse 2s ease-in-out infinite;
+}
+
+.lightning-monitor--watch {
+    border-color: var(--risk-yellow);
+    box-shadow: 0 0 12px rgba(250, 204, 21, 0.2);
+}
+
+.lightning-monitor--countdown {
+    border-color: var(--risk-yellow);
+    box-shadow: 0 0 12px rgba(250, 204, 21, 0.15);
+}
+
+.lightning-monitor--clear {
+    border-color: var(--risk-green);
+    box-shadow: 0 0 12px rgba(74, 222, 128, 0.15);
+}
+
+.lightning-monitor--disconnected {
+    border-color: var(--color-text-muted);
+    opacity: 0.7;
+}
+
+@keyframes lightning-pulse {
+    0%, 100% { box-shadow: 0 0 20px rgba(239, 68, 68, 0.3), inset 0 0 20px rgba(239, 68, 68, 0.05); }
+    50% { box-shadow: 0 0 30px rgba(239, 68, 68, 0.5), inset 0 0 30px rgba(239, 68, 68, 0.1); }
+}
+
+.lightning-monitor__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-sm);
+}
+
+.lightning-monitor__title {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--color-text);
+}
+
+.lightning-monitor__status {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.lightning-monitor--active .lightning-monitor__status {
+    color: var(--risk-red);
+}
+
+.lightning-monitor--clear .lightning-monitor__status {
+    color: var(--risk-green);
+}
+
+.lightning-monitor__live-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--risk-red);
+    color: white;
+    font-size: 0.6rem;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: var(--radius-sm);
+    letter-spacing: 0.08em;
+    animation: badge-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes badge-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.status-dot--green { background: var(--risk-green); }
+.status-dot--yellow { background: var(--risk-yellow); }
+.status-dot--red { background: var(--risk-red); animation: dot-pulse 1s ease-in-out infinite; }
+.status-dot--gray { background: var(--color-text-muted); }
+
+@keyframes dot-pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.3); }
+}
+
+.lightning-monitor__body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+}
+
+.lightning-monitor__danger-zone {
+    background: rgba(239, 68, 68, 0.1);
+    border-radius: var(--radius-md);
+    padding: var(--space-sm);
+}
+
+.lightning-monitor__count {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-xs);
+}
+
+.lightning-monitor__count--danger {
+    color: var(--risk-red);
+}
+
+.lightning-monitor__count-num {
+    font-size: 1.5rem;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.lightning-monitor__count-num--watch {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--risk-yellow);
+}
+
+.lightning-monitor__count-label {
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+}
+
+.lightning-monitor__closest {
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+    margin-top: var(--space-2xs);
+}
+
+.lightning-monitor__watch-zone {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-xs);
+    padding: var(--space-2xs) 0;
+}
+
+.lightning-monitor__last-strike {
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+}
+
+.lightning-monitor__no-strikes {
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    text-align: center;
+    padding: var(--space-xs) 0;
+}
+
+.lightning-monitor__countdown {
+    background: rgba(250, 204, 21, 0.08);
+    border-radius: var(--radius-md);
+    padding: var(--space-sm);
+}
+
+.lightning-monitor__countdown-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: var(--space-2xs);
+}
+
+.lightning-monitor__countdown-timer {
+    font-size: 1.8rem;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-text);
+    line-height: 1;
+    margin-bottom: var(--space-xs);
+}
+
+.lightning-monitor__progress-bar {
+    height: 4px;
+    background: var(--color-border);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.lightning-monitor__progress-fill {
+    height: 100%;
+    background: var(--risk-green);
+    border-radius: 2px;
+    transition: width 1s linear;
+}
+
+.lightning-monitor__clear-msg {
+    font-size: 0.8rem;
+    color: var(--risk-green);
+    font-weight: 600;
+}

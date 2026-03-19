@@ -438,7 +438,7 @@ export function applyNWSOverrides(riskResult, alerts) {
 /**
  * Full risk assessment for a single race
  */
-export function assessRaceRisk(weatherData, race, alerts = [], climateDeparture = null, aqiData = null) {
+export function assessRaceRisk(weatherData, race, alerts = [], climateDeparture = null, aqiData = null, lightningStrikeData = null) {
     if (!weatherData || !weatherData.hourly) {
         return {
             lightning: 0, trailDamage: 0, wind: 0, heat: 0, heavyRain: 0, aqi: 0,
@@ -462,6 +462,13 @@ export function assessRaceRisk(weatherData, race, alerts = [], climateDeparture 
     const heatResult = scoreHeatRisk(raceHourlyData);
     const heavyRainResult = scoreHeavyRain(raceHourlyData);
     const aqiResult = scoreAirQuality(aqiData, race);
+
+    // Real-time lightning strike override
+    if (lightningStrikeData && lightningStrikeData.dangerCount > 0) {
+        lightningResult.score = 100;
+        lightningResult.details.realTimeStrikes = lightningStrikeData.dangerCount;
+        lightningResult.details.closestStrikeMiles = lightningStrikeData.closestStrike?.distanceMiles || null;
+    }
 
     const scores = {
         lightning: lightningResult.score,

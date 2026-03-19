@@ -24,6 +24,9 @@ const initialState = {
     // Air quality data keyed by race ID: { [raceId]: [{time, aqi}] }
     aqiData: {},
 
+    // Real-time lightning strikes keyed by race ID: { [raceId]: { strikes[], dangerCount, watchCount, closestStrike, lastStrikeTime, wsConnected } }
+    lightningStrikes: {},
+
     // Previous risk levels for notification transitions: { [raceId]: 'GREEN'|'YELLOW'|'ORANGE'|'RED' }
     previousRiskLevels: {},
 

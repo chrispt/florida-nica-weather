@@ -103,6 +103,12 @@ function renderFactor(label, score, bullets, nicaAction) {
 function renderLightningBullets(details) {
     if (!details) return '';
     const items = [];
+    if (details.realTimeStrikes > 0) {
+        items.push(`<strong style="color:var(--risk-red)">LIVE: ${details.realTimeStrikes} strike${details.realTimeStrikes !== 1 ? 's' : ''} within 10 miles</strong>`);
+        if (details.closestStrikeMiles != null) {
+            items.push(`Closest strike: ${details.closestStrikeMiles} mi`);
+        }
+    }
     if (details.thunderstormHours > 0) {
         items.push(`${details.thunderstormHours} thunderstorm hour${details.thunderstormHours !== 1 ? 's' : ''} forecast`);
     }

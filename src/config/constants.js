@@ -228,6 +228,17 @@ export const UV_THRESHOLDS = [
     { max: Infinity, label: 'Extreme', color: 'var(--uv-extreme, #a855f7)' }
 ];
 
+// Lightning monitor configuration
+export const LIGHTNING_MONITOR = {
+    ACTIVATION_DAYS: 1,            // Connect WS when race ≤1 day away
+    DANGER_RADIUS_MILES: 10,       // NICA stop-activity threshold
+    WATCH_RADIUS_MILES: 30,        // Secondary approaching-storm ring
+    NICA_CLEAR_MINUTES: 30,        // Wait time after last strike
+    STRIKE_TTL_MINUTES: 60,        // Age out all strikes after 60 min
+    DANGER_STRIKE_TTL_MINUTES: 30, // Danger zone window
+    COUNTDOWN_TICK_MS: 1000,       // 1s timer tick
+};
+
 // localStorage keys
 export const STORAGE_KEYS = {
     TEMP_UNIT: 'nicaWeather_tempUnit',

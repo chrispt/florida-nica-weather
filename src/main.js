@@ -28,7 +28,9 @@ import {
     sendRiskNotification, shouldNotify,
     getPreviousRiskLevels, savePreviousRiskLevels
 } from './notifications/notificationManager.js';
-import { REFRESH_INTERVAL_NORMAL, REFRESH_INTERVAL_RACEDAY, NOWCAST_PROXIMITY_DAYS } from './config/constants.js';
+import { REFRESH_INTERVAL_NORMAL, REFRESH_INTERVAL_RACEDAY, NOWCAST_PROXIMITY_DAYS, LIGHTNING_MONITOR } from './config/constants.js';
+import { startLightningMonitor, stopLightningMonitor, getLightningStrikeData } from './api/blitzortung.js';
+import { renderLightningMonitor, destroyLightningMonitor } from './ui/lightningMonitor.js';
 
 // DOM containers
 const heroContainer = document.getElementById('hero');
@@ -45,6 +47,7 @@ const notifBellContainer = document.getElementById('notification-bell');
 const unitToggleContainer = document.getElementById('unit-toggle');
 const raceSelectorContainer = document.getElementById('race-selector');
 const themeToggleContainer = document.getElementById('theme-toggle');
+const lightningMonitorContainer = document.getElementById('lightning-monitor');
 
 let refreshTimer = null;
 
@@ -126,8 +129,36 @@ async function init() {
     renderActiveRace();
     renderAllRaces(allRacesContainer, handleRaceClick);
 
+    // Subscribe to lightning strike updates for re-render + risk re-assessment
+    store.subscribe('lightningStrikes', () => {
+        const activeId = store.get('activeRaceId');
+        const race = RACES.find(r => r.id === activeId);
+        if (!race) return;
+
+        const strikeData = getLightningStrikeData(race.id);
+        renderLightningMonitor(lightningMonitorContainer, strikeData, race);
+
+        // Re-assess risk with real-time lightning data
+        const weatherData = store.get('weatherData')[race.id];
+        if (weatherData) {
+            const alertsDataForRace = store.get('alertsData')[race.id];
+            const alerts = alertsDataForRace
+                ? filterAlertsForRaceWindow(alertsDataForRace.alerts, race.dates.start, race.dates.end, race.raceHours)
+                : [];
+            const riskData = { ...store.get('riskData') };
+            const climateDeparture = riskData[race.id]?.trailDamageDetails?.climateDeparture || null;
+            const aqiDataForRace = store.get('aqiData')[race.id] || null;
+            riskData[race.id] = assessRaceRisk(weatherData, race, alerts, climateDeparture, aqiDataForRace, strikeData);
+            store.set('riskData', riskData);
+            renderRiskBanner(riskContainer, riskData[race.id], race);
+        }
+    });
+
     // Fetch weather data
     await fetchAllWeatherData();
+
+    // Activate lightning monitor if race is close enough
+    activateLightningMonitorIfNeeded();
 
     // Start auto-refresh
     startAutoRefresh();
@@ -230,12 +261,13 @@ async function fetchAllWeatherData() {
                 }
             }
 
-            // Risk assessment with alerts, climate, and AQI context
+            // Risk assessment with alerts, climate, AQI, and real-time lightning context
             if (weatherData[race.id]) {
                 const alerts = alertsData[race.id]
                     ? filterAlertsForRaceWindow(alertsData[race.id].alerts, race.dates.start, race.dates.end, race.raceHours)
                     : [];
-                riskData[race.id] = assessRaceRisk(weatherData[race.id], race, alerts, climateDeparture, aqiData[race.id] || null);
+                const strikeData = getLightningStrikeData(race.id);
+                riskData[race.id] = assessRaceRisk(weatherData[race.id], race, alerts, climateDeparture, aqiData[race.id] || null, strikeData);
             }
         }
 
@@ -340,8 +372,37 @@ function handleRaceClick(raceId) {
     renderAllRaces(allRacesContainer, handleRaceClick);
     renderRaceSelector(raceSelectorContainer, handleRaceClick);
 
+    // Switch lightning monitor to new race
+    activateLightningMonitorIfNeeded();
+
     // Scroll to top
     window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/**
+ * Activate or deactivate the lightning monitor based on race proximity
+ */
+function activateLightningMonitorIfNeeded() {
+    const activeId = store.get('activeRaceId');
+    const race = RACES.find(r => r.id === activeId);
+    if (!race) {
+        stopLightningMonitor();
+        destroyLightningMonitor();
+        if (lightningMonitorContainer) lightningMonitorContainer.innerHTML = '';
+        return;
+    }
+
+    const days = daysUntilRace(race);
+    if (days <= LIGHTNING_MONITOR.ACTIVATION_DAYS && days >= 0) {
+        startLightningMonitor(race);
+        // Render initial state
+        const strikeData = getLightningStrikeData(race.id);
+        renderLightningMonitor(lightningMonitorContainer, strikeData, race);
+    } else {
+        stopLightningMonitor();
+        destroyLightningMonitor();
+        if (lightningMonitorContainer) lightningMonitorContainer.innerHTML = '';
+    }
 }
 
 /**
