@@ -14,13 +14,16 @@ export function renderHourlyTimeline(container, weatherData, race) {
         return;
     }
 
-    const startDate = race.dates.start;
+    // Include Friday (day before race start) through race end (Sunday)
+    const fridayDate = new Date(race.dates.start + 'T12:00:00');
+    fridayDate.setDate(fridayDate.getDate() - 1);
+    const extendedStart = getLocalDateStr(fridayDate);
     const endDate = race.dates.end;
 
-    // Get all hourly data for the race weekend
+    // Get all hourly data for Fri-Sun, using local dates (not UTC)
     const raceWeekendHours = weatherData.hourly.filter(h => {
-        const dateStr = h.time.toISOString().slice(0, 10);
-        return dateStr >= startDate && dateStr <= endDate;
+        const dateStr = getLocalDateStr(h.time);
+        return dateStr >= extendedStart && dateStr <= endDate;
     });
 
     if (raceWeekendHours.length === 0) {
@@ -34,21 +37,24 @@ export function renderHourlyTimeline(container, weatherData, race) {
     const dayGroups = groupByDay(raceWeekendHours);
     const dayKeys = Object.keys(dayGroups);
 
+    // Default to race start day (Saturday) tab, fall back to first available
+    const defaultDay = dayKeys.includes(race.dates.start) ? race.dates.start : dayKeys[0];
+
     container.innerHTML = `
         <div class="timeline">
             <div class="timeline__header">
-                <div class="timeline__title">Race Weekend Hourly Forecast ${renderInfoButton('hourlyTimeline')}</div>
+                <div class="timeline__title">Weekend Hourly Forecast ${renderInfoButton('hourlyTimeline')}</div>
                 <div class="timeline__day-tabs">
-                    ${dayKeys.map((day, i) => `
-                        <button class="timeline__tab ${i === 0 ? 'timeline__tab--active' : ''}"
+                    ${dayKeys.map(day => `
+                        <button class="timeline__tab ${day === defaultDay ? 'timeline__tab--active' : ''}"
                                 data-day="${day}">
                             ${formatDayLabel(day)}
                         </button>
                     `).join('')}
                 </div>
             </div>
-            ${dayKeys.map((day, i) => `
-                <div class="timeline__scroll ${i === 0 ? '' : 'hidden'}" data-day-content="${day}">
+            ${dayKeys.map(day => `
+                <div class="timeline__scroll ${day === defaultDay ? '' : 'hidden'}" data-day-content="${day}">
                     <div class="timeline__grid">
                         ${dayGroups[day].map(h => renderHourCell(h, race)).join('')}
                     </div>
@@ -91,7 +97,9 @@ export function renderHourlyTimeline(container, weatherData, race) {
 
 function renderHourCell(hour, race) {
     const h = hour.time.getHours();
-    const isRaceHour = h >= race.raceHours.start && h <= race.raceHours.end;
+    const dayStr = getLocalDateStr(hour.time);
+    const isRaceDay = dayStr >= race.dates.start && dayStr <= race.dates.end;
+    const isRaceHour = isRaceDay && h >= race.raceHours.start && h <= race.raceHours.end;
     const icon = getWeatherIcon(hour.weatherCode);
     const timeStr = h === 0 ? '12a' : h < 12 ? `${h}a` : h === 12 ? '12p' : `${h - 12}p`;
 
@@ -129,11 +137,19 @@ function renderHourCell(hour, race) {
 function groupByDay(hours) {
     const groups = {};
     for (const h of hours) {
-        const day = h.time.toISOString().slice(0, 10);
+        const day = getLocalDateStr(h.time);
         if (!groups[day]) groups[day] = [];
         groups[day].push(h);
     }
     return groups;
+}
+
+/** Get YYYY-MM-DD string in local timezone (avoids UTC shift from toISOString) */
+function getLocalDateStr(date) {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
 }
 
 function formatDayLabel(dateStr) {
