@@ -67,6 +67,7 @@ export function renderLightningMonitor(container, strikeData, race) {
                 <div class="lightning-monitor__title">
                     <span class="status-dot ${statusDot}"></span>
                     <span>Lightning Monitor</span>
+                    <span class="lightning-monitor__beta-badge">BETA</span>
                     ${hasActiveStrikes ? '<span class="lightning-monitor__live-badge">LIVE</span>' : ''}
                 </div>
                 <div class="lightning-monitor__status">${statusText}</div>

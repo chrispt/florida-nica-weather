@@ -108,6 +108,7 @@ function renderLightningBullets(details) {
         if (details.closestStrikeMiles != null) {
             items.push(`Closest strike: ${details.closestStrikeMiles} mi`);
         }
+        items.push(`<span style="color:var(--color-text-muted);font-size:0.7em">Beta — verify with official sources</span>`);
     }
     if (details.thunderstormHours > 0) {
         items.push(`${details.thunderstormHours} thunderstorm hour${details.thunderstormHours !== 1 ? 's' : ''} forecast`);
