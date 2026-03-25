@@ -541,6 +541,13 @@
     grid-column: 1 / -1;
 }
 
+.widget__subtitle {
+    font-size: 0.65rem;
+    color: var(--color-text-muted);
+    font-weight: 400;
+    margin-bottom: var(--space-xs);
+}
+
 .widget__title {
     font-size: 0.65rem;
     text-transform: uppercase;

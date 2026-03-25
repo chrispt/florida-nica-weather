@@ -11,6 +11,19 @@ import { renderAQIWidget } from './aqiWidget.js';
 import { getRaceHourlyWindow } from '../config/riskAssessment.js';
 import { renderInfoButton, setupInfoButtons } from './infoButton.js';
 
+function formatWidgetDate(date) {
+    return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+}
+
+function formatWidgetTime(date) {
+    return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+}
+
+function getRaceStartDate(race) {
+    const d = new Date(race.dates.start + 'T12:00:00');
+    return formatWidgetDate(d);
+}
+
 export function renderWeatherDetails(container, weatherData, race, nowcastData = null, climateDeparture = null, aqiData = null) {
     if (!weatherData || !weatherData.hourly || weatherData.hourly.length === 0) {
         container.innerHTML = `
@@ -56,7 +69,7 @@ export function renderWeatherDetails(container, weatherData, race, nowcastData =
     const nowcastHtml = nowcastData ? renderNowcastWidget(nowcastData) : '';
 
     // Heat safety widget
-    const heatHtml = renderHeatSafetyWidget(raceHourlyData);
+    const heatHtml = renderHeatSafetyWidget(raceHourlyData, race);
 
     // AQI widget
     const aqiHtml = aqiData ? renderAQIWidget(aqiData, race) : '';
@@ -65,10 +78,10 @@ export function renderWeatherDetails(container, weatherData, race, nowcastData =
         <div class="widget-grid">
             ${nowcastHtml}
             ${renderRaceDaySummaryWidget(raceDayCards, race)}
-            ${renderCurrentConditions(currentHour)}
+            ${renderCurrentConditions(currentHour, now)}
             ${renderRainfallWidget(rainHistory, weatherData, race, climateDeparture)}
             ${renderSoilMoistureWidget(latestSoil)}
-            ${renderWindWidget(currentHour, raceDaySummary)}
+            ${renderWindWidget(currentHour, raceDaySummary, race)}
             ${heatHtml}
             ${aqiHtml}
         </div>`;
@@ -116,7 +129,7 @@ function renderRaceDaySummaryWidget(raceDayCards, race) {
         </div>`;
 }
 
-function renderCurrentConditions(hour) {
+function renderCurrentConditions(hour, now) {
     if (!hour) return '';
     const icon = getWeatherIcon(hour.weatherCode);
     const desc = getWeatherDescription(hour.weatherCode);
@@ -129,9 +142,17 @@ function renderCurrentConditions(hour) {
         ? `<div class="widget__detail">UV Index: ${hour.uvIndex.toFixed(1)} <span class="uv-badge" style="background:${getUvColor(hour.uvIndex)}">${getUvLabel(hour.uvIndex)}</span></div>`
         : '';
 
+    // Temporal context: "Now" if within ~1 hour, otherwise show date/time
+    const diffMs = Math.abs(hour.time - now);
+    const isNow = diffMs < 2 * 60 * 60 * 1000; // within 2 hours
+    const subtitle = isNow
+        ? `Now \u2014 as of ${formatWidgetTime(hour.time)}`
+        : `Forecast for ${formatWidgetDate(hour.time)} at ${formatWidgetTime(hour.time)}`;
+
     return `
         <div class="widget widget--collapsible">
             <div class="widget__title"><button class="widget__title-btn" type="button">Current Conditions ${renderInfoButton('currentConditions')}<span class="widget__collapse-icon">&#x25BC;</span></button></div>
+            <div class="widget__subtitle">${subtitle}</div>
             <div class="widget__body">
                 <div style="display: flex; align-items: center; gap: var(--space-md);">
                     <span style="font-size: 2.5rem;">${icon.icon}</span>
@@ -198,9 +219,14 @@ function renderSoilMoistureWidget(soil) {
 
     const deepValue = soil ? formatSoilMoisture(soil.soilMoisture7to28) : 'N/A';
 
+    const soilSubtitle = soil && soil.time
+        ? `Latest reading \u2014 ${formatWidgetDate(soil.time)}`
+        : 'Latest reading';
+
     return `
         <div class="widget widget--collapsible">
             <div class="widget__title"><button class="widget__title-btn" type="button">Soil Moisture ${renderInfoButton('soilMoisture')}<span class="widget__collapse-icon">&#x25BC;</span></button></div>
+            <div class="widget__subtitle">${soilSubtitle}</div>
             <div class="widget__body">
                 <div class="widget__value">${displayVal}</div>
                 <div class="widget__detail">Surface (0-7cm)</div>
@@ -222,12 +248,15 @@ function renderSoilMoistureWidget(soil) {
         </div>`;
 }
 
-function renderWindWidget(currentHour, raceDaySummary) {
+function renderWindWidget(currentHour, raceDaySummary, race) {
     if (!currentHour) return '';
+
+    const raceDate = getRaceStartDate(race);
 
     return `
         <div class="widget widget--collapsible">
             <div class="widget__title"><button class="widget__title-btn" type="button">Wind ${renderInfoButton('wind')}<span class="widget__collapse-icon">&#x25BC;</span></button></div>
+            <div class="widget__subtitle">Now \u2014 ${formatWidgetTime(currentHour.time)}</div>
             <div class="widget__body">
                 <div class="widget__value">${formatWindSpeed(currentHour.windSpeed)}</div>
                 <div class="widget__detail">${getWindDirectionLabel(currentHour.windDirection)} (${Math.round(currentHour.windDirection)}°)</div>
@@ -237,7 +266,7 @@ function renderWindWidget(currentHour, raceDaySummary) {
                 </div>
                 ${raceDaySummary ? `
                 <div class="widget__row">
-                    <span class="widget__row-label">Race day max</span>
+                    <span class="widget__row-label">Race day max (${raceDate})</span>
                     <span class="widget__row-value">${formatWindSpeed(raceDaySummary.maxWind)}</span>
                 </div>
                 <div class="widget__row">

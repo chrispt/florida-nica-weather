@@ -28,6 +28,7 @@ export function renderAQIWidget(aqiData, race) {
     // Find peak AQI
     const peak = raceAQI.reduce((max, d) => d.aqi > max.aqi ? d : max);
     const peakHourStr = peak.time.toLocaleTimeString('en-US', { hour: 'numeric', hour12: true });
+    const peakDateStr = peak.time.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
     const category = getAQICategory(peak.aqi);
 
     // Gauge: map AQI 0-200 to 0-100%
@@ -41,6 +42,7 @@ export function renderAQIWidget(aqiData, race) {
     return `
         <div class="widget widget--collapsible">
             <div class="widget__title"><button class="widget__title-btn" type="button">Air Quality (AQI) ${renderInfoButton('airQuality')}<span class="widget__collapse-icon">&#x25BC;</span></button></div>
+            <div class="widget__subtitle">Race day forecast \u2014 ${peakDateStr}</div>
             <div class="widget__body">
                 <div class="wbgt-value" style="color: ${category.color};">
                     <span class="widget__value">${peak.aqi}</span>

@@ -11,7 +11,7 @@ import { renderInfoButton } from './infoButton.js';
  * @param {Array} raceHourlyData - Hourly data for race hours
  * @returns {string} HTML string
  */
-export function renderHeatSafetyWidget(raceHourlyData) {
+export function renderHeatSafetyWidget(raceHourlyData, race) {
     if (!raceHourlyData || raceHourlyData.length === 0) return '';
 
     // Calculate Heat Index for each race hour
@@ -25,6 +25,7 @@ export function renderHeatSafetyWidget(raceHourlyData) {
     const peakHI = hiData.reduce((max, d) => d.hiF > max.hiF ? d : max);
     const category = getHeatIndexCategory(peakHI.hiF);
     const peakHourStr = peakHI.hour.toLocaleTimeString('en-US', { hour: 'numeric', hour12: true });
+    const peakDateStr = peakHI.hour.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
 
     // Gauge position: map Heat Index 80-120°F to 0-100%
     const gaugeMin = 80;
@@ -43,6 +44,7 @@ export function renderHeatSafetyWidget(raceHourlyData) {
     return `
         <div class="widget widget--collapsible">
             <div class="widget__title"><button class="widget__title-btn" type="button">Heat Safety (Heat Index) ${renderInfoButton('heatSafety')}<span class="widget__collapse-icon">&#x25BC;</span></button></div>
+            <div class="widget__subtitle">Race day forecast \u2014 ${peakDateStr}</div>
             <div class="widget__body">
                 <div class="wbgt-value" style="color: ${category.color};">
                     <span class="widget__value">${Math.round(peakHI.hiF)}&deg;F</span>
