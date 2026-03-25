@@ -55,17 +55,41 @@ export function setupInfoButtons(container) {
             popover.dataset.helpKey = key;
             popover.textContent = text;
 
-            // Insert after the button
-            btn.insertAdjacentElement('afterend', popover);
+            // Append to body to escape stacking contexts (backdrop-filter on parent sections)
+            const rect = btn.getBoundingClientRect();
+            popover.style.top = `${rect.bottom + 4}px`;
+            popover.style.left = `${rect.left}px`;
+            document.body.appendChild(popover);
 
-            // Click outside to dismiss (one-time listener)
+            // If popover overflows right edge, align to right of button
             requestAnimationFrame(() => {
-                document.addEventListener('click', function dismiss(evt) {
-                    if (!popover.contains(evt.target) && evt.target !== btn) {
-                        popover.remove();
-                        document.removeEventListener('click', dismiss);
-                    }
-                });
+                const popRect = popover.getBoundingClientRect();
+                if (popRect.right > window.innerWidth - 16) {
+                    popover.style.left = 'auto';
+                    popover.style.right = `${window.innerWidth - rect.right}px`;
+                }
+            });
+
+            // Cleanup helper
+            const cleanup = () => {
+                popover.remove();
+                document.removeEventListener('click', dismiss);
+                window.removeEventListener('scroll', dismissOnScroll, true);
+            };
+
+            // Click outside to dismiss
+            function dismiss(evt) {
+                if (!popover.contains(evt.target) && evt.target !== btn) {
+                    cleanup();
+                }
+            }
+
+            // Dismiss on scroll (anchor position becomes stale)
+            const dismissOnScroll = () => cleanup();
+
+            requestAnimationFrame(() => {
+                document.addEventListener('click', dismiss);
+                window.addEventListener('scroll', dismissOnScroll, { once: true, capture: true });
             });
         });
     });
