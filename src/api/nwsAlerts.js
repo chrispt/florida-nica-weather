@@ -16,6 +16,7 @@ export async function fetchNWSAlerts(lat, lon) {
 
     try {
         const response = await fetch(url, {
+            signal: typeof AbortSignal.timeout === 'function' ? AbortSignal.timeout(15000) : undefined,
             headers: {
                 'Accept': 'application/geo+json',
                 'User-Agent': NWS_USER_AGENT

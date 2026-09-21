@@ -249,5 +249,6 @@ export const STORAGE_KEYS = {
     SPEED_UNIT: 'nicaWeather_speedUnit',
     NOTIFICATION_PREFS: 'nicaWeather_notifPrefs',
     PREVIOUS_RISK_LEVELS: 'nicaWeather_prevRiskLevels',
-    EVENTS_VIEW: 'nicaWeather_eventsView'
+    EVENTS_VIEW: 'nicaWeather_eventsView',
+    CLIMATE_NORMALS: 'nicaWeather_climateNormals_v1'
 };
