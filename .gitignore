@@ -6,3 +6,6 @@ dist
 Thumbs.db
 
 .vercel
+
+# Personal Claude Code settings (machine-specific permissions)
+.claude/settings.local.json
