@@ -15,7 +15,7 @@ export function renderRaceSelector(container, onSelect) {
 
     const optionHtml = (race) => {
         const risk = riskData[race.id];
-        const badge = risk ? `[${risk.level}]` : '';
+        const badge = risk && risk.forecastAvailable !== false ? `[${risk.level}]` : '';
         const selected = race.id === activeId ? 'selected' : '';
         // Races are numbered within the season; adventure days sit outside
         // that count and are prefixed so they read differently in the list.

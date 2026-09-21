@@ -4,7 +4,7 @@
  */
 
 import { fetchWithErrorHandling } from './client.js';
-import { OPEN_METEO_BASE, HOURLY_PARAMS, DAILY_PARAMS } from '../config/constants.js';
+import { OPEN_METEO_BASE, HOURLY_PARAMS, DAILY_PARAMS, FORECAST_HORIZON_DAYS } from '../config/constants.js';
 
 /**
  * Fetch weather data for a race venue
@@ -19,7 +19,7 @@ export async function fetchRaceWeather(lat, lon) {
         hourly: HOURLY_PARAMS,
         daily: DAILY_PARAMS,
         past_days: 7,
-        forecast_days: 16,
+        forecast_days: FORECAST_HORIZON_DAYS,
         timezone: 'auto'
     });
 

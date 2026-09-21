@@ -41,6 +41,10 @@ export const DAILY_PARAMS = [
 ].join(',');
 
 // Refresh intervals (milliseconds)
+// Open-Meteo hourly forecast covers today plus this many days total.
+// Races that start beyond the window have no hourly data to score.
+export const FORECAST_HORIZON_DAYS = 16;
+
 export const REFRESH_INTERVAL_NORMAL = 15 * 60 * 1000;  // 15 minutes
 export const REFRESH_INTERVAL_RACEDAY = 5 * 60 * 1000;  // 5 minutes
 

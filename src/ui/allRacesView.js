@@ -3,7 +3,7 @@
  */
 
 import { RACES, SEASON, CONFERENCE_LABELS } from '../config/raceSchedule.js';
-import { getRaceStatus, formatRaceDates, daysUntilRace } from '../utils/dateUtils.js';
+import { getRaceStatus, formatRaceDates, daysUntilRace, formatForecastOpenDate, getForecastConfidence } from '../utils/dateUtils.js';
 import store from '../state/store.js';
 
 // Short conference labels — the cards are narrow, so the full
@@ -22,9 +22,16 @@ export function renderAllRaces(container, onRaceClick) {
         const statusClass = status === 'past' ? ' race-card--past'
             : race.id === activeId ? ' race-card--active' : '';
 
-        const badge = risk
-            ? `<span class="race-card__badge race-card__badge--${risk.level}">${risk.level} ${risk.overall}</span>`
-            : `<span class="race-card__badge race-card__badge--none">--</span>`;
+        // Three states: no score yet (beyond the forecast window), a score that can
+        // still move (low confidence), and a firm score. Never show a score we don't have.
+        const hasScore = risk && risk.forecastAvailable !== false;
+        const confidence = getForecastConfidence(race);
+        const isTentative = hasScore && status === 'upcoming'
+            && (confidence.level === 'low' || confidence.level === 'outlook');
+
+        const badge = hasScore
+            ? `<span class="race-card__badge race-card__badge--${risk.level}${isTentative ? ' race-card__badge--tentative' : ''}"${isTentative ? ' title="Forecast can still change"' : ''}>${risk.level} ${risk.overall}</span>`
+            : `<span class="race-card__badge race-card__badge--none">${risk && status === 'upcoming' ? 'No forecast' : '--'}</span>`;
 
         // Races carry their season race number; adventure days sit outside
         // that count, so they get a marker instead.
@@ -40,9 +47,13 @@ export function renderAllRaces(container, onRaceClick) {
         else if (status === 'active') statusText = isRace ? 'Race Day!' : 'Event Day!';
         else if (days <= 14) statusText = `${days} day${days !== 1 ? 's' : ''} away`;
         else statusText = `${days} days away`;
+        // Tell people when a score will appear instead of leaving a blank badge
+        if (risk && !hasScore && status === 'upcoming') {
+            statusText += ` · forecast opens ${formatForecastOpenDate(race)}`;
+        }
 
         return `
-            <button class="race-card${statusClass}" data-race-id="${race.id}" type="button" aria-label="View ${race.name} weather details">
+            <button class="race-card${statusClass}${isTentative ? ' race-card--tentative' : ''}" data-race-id="${race.id}" type="button" aria-label="View ${race.name} weather details">
                 <div class="race-card__header">
                     ${marker}
                     ${badge}

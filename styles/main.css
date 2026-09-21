@@ -271,6 +271,12 @@
     border-color: var(--risk-red);
     box-shadow: var(--shadow-glow-red);
 }
+/* No forecast yet: deliberately no risk color and no glow, so it can't read as an all-clear */
+.risk-banner--PENDING {
+    border-color: var(--color-border);
+    border-style: dashed;
+    cursor: default;
+}
 
 .risk-banner__header {
     display: flex;
@@ -296,6 +302,7 @@
 .risk-banner--YELLOW .risk-banner__level { color: var(--risk-yellow); }
 .risk-banner--ORANGE .risk-banner__level { color: var(--risk-orange); }
 .risk-banner--RED .risk-banner__level { color: var(--risk-red); }
+.risk-banner--PENDING .risk-banner__level { color: var(--color-text-secondary); }
 
 .risk-banner__score {
     font-family: var(--font-mono);
@@ -306,6 +313,7 @@
 .risk-banner--YELLOW .risk-banner__score { color: var(--risk-yellow); }
 .risk-banner--ORANGE .risk-banner__score { color: var(--risk-orange); }
 .risk-banner--RED .risk-banner__score { color: var(--risk-red); }
+.risk-banner--PENDING .risk-banner__score { color: var(--color-text-muted); }
 
 .risk-banner__summary {
     font-size: 0.8rem;
@@ -1025,6 +1033,13 @@
     background: var(--color-bg);
     color: var(--color-text-muted);
     border: 1px solid var(--color-border);
+}
+/* Score exists but the forecast can still move: dashed outline signals tentative */
+.race-card__badge--tentative {
+    border-style: dashed;
+}
+.race-card--tentative {
+    border-style: dashed;
 }
 
 .race-card__name {

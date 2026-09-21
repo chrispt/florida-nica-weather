@@ -3,7 +3,7 @@
  */
 
 import { RACES } from '../config/raceSchedule.js';
-import { formatRaceDates } from '../utils/dateUtils.js';
+import { formatRaceDates, formatForecastOpenDate } from '../utils/dateUtils.js';
 
 /**
  * Generate formatted status text for clipboard sharing
@@ -17,7 +17,9 @@ export function generateStatusText(race, riskData, weatherData) {
     lines.push(`Date: ${formatRaceDates(race)}`);
     lines.push('');
 
-    if (riskData) {
+    if (riskData && riskData.forecastAvailable === false) {
+        lines.push(`Risk Level: Not yet available (hourly forecast opens ${formatForecastOpenDate(race)})`);
+    } else if (riskData) {
         lines.push(`Risk Level: ${riskData.level} (Score: ${riskData.overall}/100)`);
         lines.push(`Assessment: ${riskData.summary}`);
         lines.push('');

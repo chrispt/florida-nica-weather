@@ -289,7 +289,9 @@ async function fetchAllWeatherData() {
         // Save current levels for next comparison
         const currentLevels = {};
         for (const [raceId, risk] of Object.entries(riskData)) {
-            currentLevels[raceId] = risk.level;
+            // A no-forecast GREEN is a placeholder. Saving it would make the first
+            // real score look like a GREEN to YELLOW change and fire a notification.
+            if (risk.forecastAvailable !== false) currentLevels[raceId] = risk.level;
         }
         savePreviousRiskLevels(currentLevels);
 

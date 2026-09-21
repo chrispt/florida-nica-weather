@@ -3,6 +3,7 @@
  */
 
 import { RACES } from '../config/raceSchedule.js';
+import { FORECAST_HORIZON_DAYS } from '../config/constants.js';
 
 /**
  * Find the next upcoming race (or currently active race)
@@ -110,6 +111,23 @@ export function daysUntilRace(race, now = new Date()) {
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const diff = raceStart - today;
     return Math.ceil(diff / (1000 * 60 * 60 * 24));
+}
+
+/**
+ * Date the hourly forecast first reaches this race's start day.
+ * The API returns today plus (FORECAST_HORIZON_DAYS - 1) more days.
+ */
+export function getForecastOpenDate(race) {
+    const d = new Date(race.dates.start + 'T12:00:00');
+    d.setDate(d.getDate() - (FORECAST_HORIZON_DAYS - 1));
+    return d;
+}
+
+/**
+ * Human label for the forecast open date, e.g. "Nov 20"
+ */
+export function formatForecastOpenDate(race) {
+    return getForecastOpenDate(race).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
 /**

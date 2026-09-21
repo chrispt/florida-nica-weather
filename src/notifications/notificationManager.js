@@ -65,6 +65,7 @@ export function checkForRiskTransitions(riskData, previousLevels) {
     const transitions = [];
 
     for (const [raceId, risk] of Object.entries(riskData)) {
+        if (risk.forecastAvailable === false) continue;
         const prev = previousLevels[raceId];
         if (prev && prev !== risk.level) {
             transitions.push({

@@ -4,7 +4,7 @@
  */
 
 import { RISK_THRESHOLDS, TRAIL_THRESHOLDS } from '../config/constants.js';
-import { getForecastConfidence } from '../utils/dateUtils.js';
+import { getForecastConfidence, formatForecastOpenDate } from '../utils/dateUtils.js';
 import { convertWindSpeed, formatWindSpeed, formatPrecipitation } from '../utils/formatting.js';
 import { renderInfoButton, setupInfoButtons } from './infoButton.js';
 
@@ -16,6 +16,22 @@ export function renderRiskBanner(container, risk, race) {
                     <span class="risk-banner__level">Loading...</span>
                 </div>
                 <div class="risk-banner__summary">Fetching weather data...</div>
+            </div>`;
+        return;
+    }
+
+    // Beyond the forecast window every score is 0 because there is nothing to score.
+    // Say so plainly instead of showing a green all-clear.
+    if (risk.forecastAvailable === false && race) {
+        container.innerHTML = `
+            <div class="risk-banner risk-banner--PENDING" role="region" aria-label="Race risk assessment">
+                <div class="risk-banner__header">
+                    <span class="risk-banner__level">Awaiting forecast</span>
+                    <span class="risk-banner__score-group">
+                        <span class="risk-banner__score">--</span>
+                    </span>
+                </div>
+                <div class="risk-banner__summary">No risk score yet. Hourly forecasts reach this race weekend on ${formatForecastOpenDate(race)}, and a score will appear then.</div>
             </div>`;
         return;
     }

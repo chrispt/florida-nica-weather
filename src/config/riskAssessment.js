@@ -443,6 +443,8 @@ export function assessRaceRisk(weatherData, race, alerts = [], climateDeparture 
         return {
             lightning: 0, trailDamage: 0, wind: 0, heat: 0, heavyRain: 0, aqi: 0,
             overall: 0, level: 'GREEN',
+            // A zero here means "no data", not "no risk". UI must not present it as a score.
+            forecastAvailable: false,
             summary: 'No weather data available',
             lightningDetails: { thunderstormHours: 0, maxPrecipProb: 0, rainHours: 0, capeMax: 0, liftedIndexMin: null, nicaAction: '' },
             trailDamageDetails: { pastRain7d: 0, avgSoilMoisture: 0, raceDayRain: 0, maxHourlyRain: 0, climateDeparture: null, nicaAction: '' },
@@ -482,8 +484,12 @@ export function assessRaceRisk(weatherData, race, alerts = [], climateDeparture 
     const { overall, level } = computeOverallRisk(scores);
     const summary = getRiskSummary(level, scores);
 
+    // Empty when the race starts beyond the forecast horizon. Every scorer then
+    // sees no hours and returns 0, which would otherwise read as a confident GREEN.
+    const forecastAvailable = raceHourlyData.length > 0;
+
     let result = {
-        ...scores, overall, level, summary,
+        ...scores, overall, level, summary, forecastAvailable,
         lightningDetails: lightningResult.details,
         trailDamageDetails: trailResult.details,
         windDetails: windResult.details,
