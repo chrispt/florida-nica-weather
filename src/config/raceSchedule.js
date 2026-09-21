@@ -39,6 +39,7 @@ export const RACES = [
         state: 'FL',
         lat: 29.0742,
         lon: -80.9867,
+        radarStation: 'KMLB',
         // Single-day adventure ride, not a race
         dates: {
             start: '2026-12-05',
@@ -59,6 +60,7 @@ export const RACES = [
         state: 'FL',
         lat: 25.8817,
         lon: -80.275,
+        radarStation: 'KAMX',
         // Single-day adventure ride, not a race
         dates: {
             start: '2026-12-12',
@@ -78,6 +80,7 @@ export const RACES = [
         state: 'FL',
         lat: 28.1576,
         lon: -80.6626,
+        radarStation: 'KMLB',
         // Saturday setup/pre-ride, Sunday racing
         dates: {
             start: '2027-01-16',
@@ -97,6 +100,7 @@ export const RACES = [
         state: 'FL',
         lat: 26.7261,
         lon: -81.6444,
+        radarStation: 'KTBW',
         // Saturday setup/pre-ride, Sunday racing
         dates: {
             start: '2027-01-30',
@@ -116,6 +120,7 @@ export const RACES = [
         state: 'FL',
         lat: 29.057,
         lon: -82.1526,
+        radarStation: 'KTBW',
         // Saturday setup/pre-ride, Sunday racing
         dates: {
             start: '2027-02-13',
@@ -135,6 +140,7 @@ export const RACES = [
         state: 'FL',
         lat: 30.3713,
         lon: -81.4094,
+        radarStation: 'KJAX',
         // Saturday setup/pre-ride, Sunday racing
         dates: {
             start: '2027-03-20',
@@ -154,6 +160,7 @@ export const RACES = [
         state: 'FL',
         lat: 27.928,
         lon: -81.9634,
+        radarStation: 'KTBW',
         // Saturday setup/pre-ride, Sunday racing
         dates: {
             start: '2027-04-03',
@@ -174,6 +181,7 @@ export const RACES = [
         state: 'FL',
         lat: 30.4187,
         lon: -84.1495,
+        radarStation: 'KTLH',
         // Season championship event
         // Saturday setup/pre-ride, Sunday racing
         dates: {

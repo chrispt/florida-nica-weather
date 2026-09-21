@@ -1281,7 +1281,236 @@
 
 /* Too wide to read on phones and small tablets; the cards below carry the same events */
 @media (max-width: 900px) {
-    .all-races__timeline { display: none; }
+    .all-races__view { display: none; }
+}
+
+/* ==================== VIEW TOGGLE + VENUE MAP ==================== */
+.all-races__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-md);
+    margin-bottom: var(--space-sm);
+}
+.all-races__head .all-races__title { margin-bottom: 0; }
+
+.view-toggle {
+    display: inline-flex;
+    padding: 2px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-bg-elevated);
+}
+.view-toggle__btn {
+    font: inherit;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 3px 12px;
+    border: 0;
+    border-radius: calc(var(--radius-md) - 2px);
+    background: none;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+}
+.view-toggle__btn:hover { color: var(--color-text); }
+.view-toggle__btn[aria-pressed="true"] {
+    background: var(--color-bg-hover);
+    color: var(--color-text);
+}
+.view-toggle__btn:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 1px; }
+
+/* Must come after .view-toggle above, or its display value wins the cascade */
+@media (max-width: 900px) {
+    .view-toggle { display: none; }
+}
+
+.fmap {
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+    gap: var(--space-xl);
+    align-items: start;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-lg);
+    margin-bottom: var(--space-md);
+}
+
+.fmap__stage {
+    position: relative;
+    width: 100%;
+    max-width: 640px;
+}
+.fmap__svg { display: block; width: 100%; height: 100%; }
+.fmap__land {
+    fill: var(--color-bg-hover);
+    stroke: var(--color-border);
+    stroke-width: 1.5;
+    stroke-linejoin: round;
+}
+
+/* Conference color drives both the pins and the list markers */
+.fmap--north { --pin-color: var(--conf-north); }
+.fmap--south { --pin-color: var(--conf-south); }
+.fmap--all   { --pin-color: var(--conf-all); }
+
+.fmap__mark,
+.fmap__dot .fmap__mark {
+    position: relative;
+    z-index: 1;
+    font-size: 0.7rem;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--color-bg);
+}
+
+.fmap__pin {
+    position: absolute;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: translate(-50%, -50%);
+    transition: transform var(--transition-fast);
+}
+.fmap__pin::before,
+.fmap__dot::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: var(--pin-color);
+    box-shadow: 0 0 0 3px var(--color-bg-elevated);
+}
+.fmap__pin.fmap--adventure::before {
+    background: var(--color-bg-elevated);
+    border: 3px solid var(--pin-color);
+    box-shadow: none;
+    box-sizing: border-box;
+}
+.fmap__pin.fmap--adventure .fmap__mark { font-size: 0.55rem; color: var(--pin-color); }
+.fmap__pin.fmap--championship { width: 36px; height: 36px; }
+.fmap__pin.fmap--championship::before {
+    border-radius: 0;
+    box-shadow: none;
+    clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+}
+.fmap__pin.is-hover,
+.fmap__pin:hover { transform: translate(-50%, -50%) scale(1.15); z-index: 3; }
+.fmap__pin:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 4px; border-radius: 50%; }
+.fmap__pin.is-past { opacity: 0.5; }
+.fmap__pin.is-active::before { box-shadow: 0 0 0 3px var(--color-accent); }
+.fmap__pin.fmap--championship.is-active::before { background: var(--color-accent); box-shadow: none; }
+
+.fmap__city {
+    position: absolute;
+    left: calc(100% + 6px);
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.72rem;
+    font-weight: 600;
+    white-space: nowrap;
+    color: var(--color-text);
+}
+.fmap__pin.is-active .fmap__city { font-weight: 800; }
+
+.fmap__side-title {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-sm);
+}
+.fmap__list { list-style: none; margin: 0; padding: 0; }
+.fmap__list li + li { border-top: 1px solid var(--color-border-light); }
+
+.fmap__row {
+    display: grid;
+    grid-template-columns: 92px 24px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--space-md);
+    width: 100%;
+    padding: 9px var(--space-sm);
+    border: 0;
+    border-radius: var(--radius-md);
+    background: none;
+    font: inherit;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+.fmap__row:hover,
+.fmap__row.is-hover { background: var(--color-bg-hover); }
+.fmap__row:focus-visible { outline: 2px solid var(--color-primary); outline-offset: -2px; }
+.fmap__row.is-past { opacity: 0.5; }
+.fmap__row.is-active { background: var(--tint-accent); }
+
+.fmap__row-date { font-size: 0.7rem; font-weight: 600; color: var(--color-text-secondary); }
+.fmap__dot {
+    position: relative;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.fmap__dot::before { box-shadow: none; }
+.fmap__row.fmap--adventure .fmap__dot::before {
+    background: transparent;
+    border: 2px solid var(--pin-color);
+    box-sizing: border-box;
+}
+.fmap__row.fmap--adventure .fmap__mark { font-size: 0.5rem; color: var(--pin-color); }
+.fmap__row.fmap--championship .fmap__dot::before {
+    border-radius: 0;
+    clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+}
+
+.fmap__row-text { display: flex; flex-direction: column; min-width: 0; }
+.fmap__row-name { font-size: 0.8rem; font-weight: 700; }
+.fmap__row-venue {
+    font-size: 0.65rem;
+    color: var(--color-text-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.fmap__radar {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 6px;
+    background: var(--color-bg-hover);
+    color: var(--color-text-secondary);
+}
+
+.fmap__legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs) var(--space-lg);
+    margin-top: var(--space-md);
+    font-size: 0.65rem;
+    color: var(--color-text-secondary);
+}
+.fmap__legend span { display: inline-flex; align-items: center; gap: 6px; }
+.fmap__key { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--conf-all); }
+.fmap__key--north { background: var(--conf-north); }
+.fmap__key--south { background: var(--conf-south); }
+.fmap__key--all   { background: var(--conf-all); }
+.fmap__key--ad    { background: transparent; border: 2px solid var(--color-text-secondary); box-sizing: border-box; }
+.fmap__note {
+    margin: var(--space-sm) 0 0;
+    font-size: 0.6rem;
+    color: var(--color-text-muted);
 }
 
 /* ==================== FOOTER ==================== */

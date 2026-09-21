@@ -5,14 +5,31 @@
 import { RACES, SEASON, CONFERENCE_LABELS } from '../config/raceSchedule.js';
 import { getRaceStatus, formatRaceDates, daysUntilRace, formatForecastOpenDate, getForecastConfidence } from '../utils/dateUtils.js';
 import { renderSeasonTimeline } from './seasonTimeline.js';
+import { renderFloridaMap } from './floridaMap.js';
+import { STORAGE_KEYS } from '../config/constants.js';
 import store from '../state/store.js';
 
 // Short conference labels — the cards are narrow, so the full
 // "North Conference" wraps awkwardly at mobile widths.
 const CONFERENCE_SHORT = { all: 'All', north: 'North', south: 'South' };
 
+// Storage can be blocked (private mode) or throw; the view still works without it
+function readView() {
+    try { return localStorage.getItem(STORAGE_KEYS.EVENTS_VIEW) === 'map' ? 'map' : 'timeline'; }
+    catch { return 'timeline'; }
+}
+function saveView(view) {
+    try { localStorage.setItem(STORAGE_KEYS.EVENTS_VIEW, view); } catch { /* ignore */ }
+}
+
+function renderView(host, view, onRaceClick) {
+    if (view === 'map') renderFloridaMap(host, onRaceClick);
+    else renderSeasonTimeline(host, onRaceClick);
+}
+
 export function renderAllRaces(container, onRaceClick) {
     const riskData = store.get('riskData') || {};
+    const view = readView();
 
     const cards = RACES.map(race => {
         const status = getRaceStatus(race);
@@ -68,13 +85,29 @@ export function renderAllRaces(container, onRaceClick) {
 
     container.innerHTML = `
         <div class="all-races">
-            <div class="all-races__title">Season ${SEASON} — All Events</div>
-            <div class="all-races__timeline"></div>
+            <div class="all-races__head">
+                <div class="all-races__title">Season ${SEASON} — All Events</div>
+                <div class="view-toggle" role="group" aria-label="Event view">
+                    <button type="button" class="view-toggle__btn" data-view="timeline" aria-pressed="${view === 'timeline'}">Timeline</button>
+                    <button type="button" class="view-toggle__btn" data-view="map" aria-pressed="${view === 'map'}">Map</button>
+                </div>
+            </div>
+            <div class="all-races__view"></div>
             <div class="race-cards">${cards}</div>
         </div>`;
 
-    // Timeline is hidden on narrow screens by CSS; the cards below always work
-    renderSeasonTimeline(container.querySelector('.all-races__timeline'), onRaceClick);
+    // The timeline and map are hidden on narrow screens by CSS; the cards below always work
+    const viewHost = container.querySelector('.all-races__view');
+    renderView(viewHost, view, onRaceClick);
+    container.querySelectorAll('.view-toggle__btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const next = btn.dataset.view;
+            saveView(next);
+            container.querySelectorAll('.view-toggle__btn').forEach(b =>
+                b.setAttribute('aria-pressed', String(b.dataset.view === next)));
+            renderView(viewHost, next, onRaceClick);
+        });
+    });
 
     // Click handlers — all races are clickable, including past ones
     container.querySelectorAll('.race-card').forEach(card => {
