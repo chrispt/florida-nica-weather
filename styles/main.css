@@ -1279,11 +1279,6 @@
     clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
 }
 
-/* Too wide to read on phones and small tablets; the cards below carry the same events */
-@media (max-width: 900px) {
-    .all-races__view { display: none; }
-}
-
 /* ==================== VIEW TOGGLE + VENUE MAP ==================== */
 .all-races__head {
     display: flex;
@@ -1511,6 +1506,26 @@
     margin: var(--space-sm) 0 0;
     font-size: 0.6rem;
     color: var(--color-text-muted);
+}
+
+/* Phones and small tablets: stack the map over its list. City labels would collide at
+   this width, so pins show numbers only and the list beneath names each one. */
+@media (max-width: 900px) {
+    .fmap {
+        grid-template-columns: minmax(0, 1fr);
+        gap: var(--space-md);
+        padding: var(--space-md);
+    }
+    .fmap__stage { max-width: 420px; margin: 0 auto; }
+    .fmap__city { display: none; }
+    .fmap__pin { width: 24px; height: 24px; }
+    .fmap__pin.fmap--championship { width: 32px; height: 32px; }
+    .fmap__row {
+        grid-template-columns: 64px 24px minmax(0, 1fr) auto;
+        gap: var(--space-sm);
+    }
+    .fmap__row-name { font-size: 0.75rem; }
+    .fmap__row-date span { display: block; }
 }
 
 /* ==================== FOOTER ==================== */

@@ -29,6 +29,13 @@ function makeProjection() {
     return { project, width, height };
 }
 
+// "Apr 3 - Apr 4" as two spans so a narrow column can break after the dash
+// instead of between "Apr" and "4".
+function dateSpans(race) {
+    const parts = formatRaceDates(race).split(' - ');
+    return parts.map((p, i) => `<span>${p}${i < parts.length - 1 ? ' -' : ''}</span>`).join(' ');
+}
+
 const kindOf = (race) => race.championship ? 'championship' : race.eventType === 'race' ? 'race' : 'adventure';
 const markOf = (race) => race.eventType === 'race' ? String(race.raceNumber) : 'AD';
 
@@ -68,7 +75,7 @@ export function renderFloridaMap(container, onRaceClick, now = new Date()) {
     const rows = ordered.map(race => `
         <li>
             <button type="button" class="fmap__row ${stateClasses(race)}" data-race-id="${race.id}">
-                <span class="fmap__row-date">${formatRaceDates(race)}</span>
+                <span class="fmap__row-date">${dateSpans(race)}</span>
                 <span class="fmap__dot"><span class="fmap__mark">${markOf(race)}</span></span>
                 <span class="fmap__row-text">
                     <span class="fmap__row-name">${escapeHtml(race.name)}</span>

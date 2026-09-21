@@ -13,6 +13,12 @@ import store from '../state/store.js';
 // "North Conference" wraps awkwardly at mobile widths.
 const CONFERENCE_SHORT = { all: 'All', north: 'North', south: 'South' };
 
+// Keep in sync with the 900px breakpoint in styles/main.css. The timeline needs the
+// width; below it the map is the only view, so the toggle is hidden and the saved
+// preference is left alone for when the screen widens again.
+const NARROW_QUERY = '(max-width: 900px)';
+const isNarrow = () => typeof window.matchMedia === 'function' && window.matchMedia(NARROW_QUERY).matches;
+
 // Storage can be blocked (private mode) or throw; the view still works without it
 function readView() {
     try { return localStorage.getItem(STORAGE_KEYS.EVENTS_VIEW) === 'map' ? 'map' : 'timeline'; }
@@ -27,9 +33,21 @@ function renderView(host, view, onRaceClick) {
     else renderSeasonTimeline(host, onRaceClick);
 }
 
+let lastRender = null;
+let breakpointWatched = false;
+
 export function renderAllRaces(container, onRaceClick) {
+    lastRender = [container, onRaceClick];
+    // Rotating a phone or resizing a window across the breakpoint swaps the view
+    if (!breakpointWatched && typeof window.matchMedia === 'function') {
+        breakpointWatched = true;
+        window.matchMedia(NARROW_QUERY).addEventListener('change', () => {
+            if (lastRender) renderAllRaces(...lastRender);
+        });
+    }
+
     const riskData = store.get('riskData') || {};
-    const view = readView();
+    const view = isNarrow() ? 'map' : readView();
 
     const cards = RACES.map(race => {
         const status = getRaceStatus(race);
