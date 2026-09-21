@@ -4,6 +4,7 @@
 
 import { RACES, SEASON, CONFERENCE_LABELS } from '../config/raceSchedule.js';
 import { getRaceStatus, formatRaceDates, daysUntilRace, formatForecastOpenDate, getForecastConfidence } from '../utils/dateUtils.js';
+import { renderSeasonTimeline } from './seasonTimeline.js';
 import store from '../state/store.js';
 
 // Short conference labels — the cards are narrow, so the full
@@ -68,8 +69,12 @@ export function renderAllRaces(container, onRaceClick) {
     container.innerHTML = `
         <div class="all-races">
             <div class="all-races__title">Season ${SEASON} — All Events</div>
+            <div class="all-races__timeline"></div>
             <div class="race-cards">${cards}</div>
         </div>`;
+
+    // Timeline is hidden on narrow screens by CSS; the cards below always work
+    renderSeasonTimeline(container.querySelector('.all-races__timeline'), onRaceClick);
 
     // Click handlers — all races are clickable, including past ones
     container.querySelectorAll('.race-card').forEach(card => {

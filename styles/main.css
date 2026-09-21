@@ -930,14 +930,12 @@
     margin-bottom: var(--space-sm);
 }
 
+/* Wrapping grid: every event is visible at once instead of hiding the back
+   half of the season behind a horizontal scrollbar. */
 .race-cards {
-    display: flex;
-    overflow-x: auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
     gap: var(--space-sm);
-    padding-bottom: var(--space-sm);
-    -webkit-overflow-scrolling: touch;
-    mask-image: linear-gradient(to right, black 92%, transparent 100%);
-    -webkit-mask-image: linear-gradient(to right, black 92%, transparent 100%);
 }
 
 .race-card {
@@ -951,9 +949,7 @@
     text-align: left;
     font: inherit;
     color: inherit;
-    min-width: 200px;
-    max-width: 240px;
-    flex-shrink: 0;
+    min-width: 0;
 }
 .race-card:hover {
     border-color: var(--color-accent);
@@ -1072,17 +1068,220 @@
     color: var(--color-text-secondary);
     border: 1px solid var(--color-border);
 }
-.race-card__conf--all {
-    color: var(--color-accent);
-    border-color: var(--tint-accent-border);
-    background: var(--tint-accent);
-}
+.race-card__conf--north { color: var(--conf-north); border-color: var(--conf-north); }
+.race-card__conf--south { color: var(--conf-south); border-color: var(--conf-south); }
+.race-card__conf--all   { color: var(--conf-all);   border-color: var(--conf-all); }
 
 .race-card__status {
     font-size: 0.6rem;
     color: var(--color-text-muted);
     margin-top: var(--space-2xs);
     font-style: italic;
+}
+
+/* ==================== SEASON TIMELINE ==================== */
+.timeline {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-sm) var(--space-lg);
+    margin-bottom: var(--space-md);
+}
+
+.timeline__plot {
+    position: relative;
+    padding: 30px 44px 30px 0;
+}
+
+/* Sits exactly over the lane tracks (180px lane header column, 44px right pad) */
+.timeline__overlay {
+    position: absolute;
+    left: 180px;
+    right: 44px;
+    top: 0;
+    bottom: 0;
+    pointer-events: none;
+}
+
+.timeline__month {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    border-left: 1px solid var(--color-border-light);
+}
+.timeline__month span {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    white-space: nowrap;
+}
+
+.timeline__window {
+    position: absolute;
+    top: 30px;
+    bottom: 30px;
+    background: var(--color-primary);
+    opacity: 0.13;
+}
+.timeline__today {
+    position: absolute;
+    top: 30px;
+    bottom: 0;
+    border-left: 2px solid var(--color-primary);
+}
+.timeline__today span {
+    position: absolute;
+    bottom: 7px;
+    left: 6px;
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: var(--color-primary);
+    white-space: nowrap;
+}
+
+.timeline__lane {
+    --lane-color: var(--conf-all);
+    position: relative;
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    align-items: center;
+    height: 136px;
+}
+.timeline__lane + .timeline__lane {
+    border-top: 1px solid var(--color-border-light);
+}
+.timeline__lane--north { --lane-color: var(--conf-north); }
+.timeline__lane--south { --lane-color: var(--conf-south); }
+.timeline__lane--all   { --lane-color: var(--conf-all); }
+
+.timeline__lane-head {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding-right: var(--space-md);
+}
+.timeline__lane-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--lane-color);
+    flex-shrink: 0;
+}
+.timeline__lane-name {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+.timeline__lane-sub {
+    display: block;
+    font-size: 0.65rem;
+    color: var(--color-text-muted);
+}
+
+.timeline__track {
+    position: relative;
+    height: 100%;
+}
+.timeline__line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 2px;
+    margin-top: -1px;
+    background: var(--lane-color);
+    opacity: 0.4;
+}
+
+.timeline__marker {
+    position: absolute;
+    top: 50%;
+    width: 16px;
+    height: 16px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+    transform: translate(-50%, -50%);
+    transition: transform var(--transition-fast);
+}
+/* The visible shape is a pseudo-element so the star's clip-path cannot clip the label */
+.timeline__marker::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--lane-color);
+    border-radius: 50%;
+}
+.timeline__marker--adventure::before {
+    background: var(--color-bg-elevated);
+    border: 3px solid var(--lane-color);
+    box-sizing: border-box;
+}
+.timeline__marker--championship {
+    width: 28px;
+    height: 28px;
+}
+.timeline__marker--championship::before {
+    border-radius: 0;
+    clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+}
+.timeline__marker:hover { transform: translate(-50%, -50%) scale(1.2); z-index: 2; }
+.timeline__marker:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 4px; border-radius: 50%; }
+.timeline__marker.is-past { opacity: 0.45; }
+.timeline__marker.is-active::before { box-shadow: 0 0 0 3px var(--color-accent); }
+.timeline__marker--championship.is-active::before { background: var(--color-accent); box-shadow: none; }
+
+.timeline__label {
+    position: absolute;
+    left: 50%;
+    width: 170px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    transform: translateX(-50%);
+    line-height: 1.25;
+}
+.timeline__label--up   { bottom: calc(100% + 8px); }
+.timeline__label--down { top: calc(100% + 8px); }
+.timeline__label-name  { font-size: 0.72rem; font-weight: 700; }
+.timeline__label-dates { font-size: 0.65rem; font-weight: 600; color: var(--color-primary); }
+.timeline__label-city  { font-size: 0.6rem; color: var(--color-text-muted); }
+
+.timeline__legend {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: var(--space-lg);
+    font-size: 0.65rem;
+    color: var(--color-text-secondary);
+    padding-bottom: var(--space-xs);
+}
+.timeline__legend span { display: inline-flex; align-items: center; gap: 6px; }
+.timeline__key {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    background: var(--color-text-secondary);
+    border-radius: 50%;
+}
+.timeline__key--adventure { background: transparent; border: 2px solid var(--color-text-secondary); box-sizing: border-box; }
+.timeline__key--championship {
+    width: 13px;
+    height: 13px;
+    border-radius: 0;
+    clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+}
+
+/* Too wide to read on phones and small tablets; the cards below carry the same events */
+@media (max-width: 900px) {
+    .all-races__timeline { display: none; }
 }
 
 /* ==================== FOOTER ==================== */

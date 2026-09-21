@@ -166,6 +166,7 @@ export const RACES = [
         id: 8,
         raceNumber: 6,
         eventType: 'race',
+        championship: true,
         conference: 'all',
         name: 'State Championship',
         venue: 'Apalachee Regional Park',

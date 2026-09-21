@@ -104,6 +104,12 @@
 
     /* Theme toggle icon */
     --theme-icon-color: var(--color-text-secondary);
+
+    /* Conference identity. Deliberately clear of the risk hues (green/yellow/orange/red)
+       so a conference can never be mistaken for a risk level. */
+    --conf-north: #38bdf8;
+    --conf-south: #a78bfa;
+    --conf-all: #cbd5e1;
 }
 
 /* ==================== LIGHT THEME ==================== */
@@ -160,6 +166,11 @@
     --milestone-future: #cbd5e1;
 
     --theme-icon-color: var(--color-text-secondary);
+
+    /* Conference identity (darker for contrast on light surfaces) */
+    --conf-north: #0284c7;
+    --conf-south: #7c3aed;
+    --conf-all: #475569;
 }
 
 /* ==================== OS PREFERENCE (AUTO) ==================== */
@@ -209,5 +220,9 @@
         --milestone-past: #94a3b8;
         --milestone-active: #ea580c;
         --milestone-future: #cbd5e1;
+
+        --conf-north: #0284c7;
+        --conf-south: #7c3aed;
+        --conf-all: #475569;
     }
 }
