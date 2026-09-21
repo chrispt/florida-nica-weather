@@ -17,7 +17,10 @@ export function renderRaceSelector(container, onSelect) {
         const risk = riskData[race.id];
         const badge = risk ? `[${risk.level}]` : '';
         const selected = race.id === activeId ? 'selected' : '';
-        return `<option value="${race.id}" ${selected}>#${race.id} ${race.name} ${badge}</option>`;
+        // Races are numbered within the season; adventure days sit outside
+        // that count and are prefixed so they read differently in the list.
+        const prefix = race.eventType === 'race' ? `#${race.raceNumber}` : 'AD';
+        return `<option value="${race.id}" ${selected}>${prefix} ${race.name} ${badge}</option>`;
     };
 
     container.innerHTML = `

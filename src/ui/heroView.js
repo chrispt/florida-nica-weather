@@ -3,6 +3,7 @@
  */
 
 import { getCountdown, formatCountdown, formatRaceDates, getRaceStatus, isRaceDayForRace } from '../utils/dateUtils.js';
+import { CONFERENCE_LABELS } from '../config/raceSchedule.js';
 
 let countdownInterval = null;
 
@@ -19,10 +20,18 @@ export function renderHero(container, race) {
     const status = getRaceStatus(race);
     const isActive = isRaceDayForRace(race);
     const pastClass = status === 'past' ? ' hero--past' : '';
+    const isRace = race.eventType === 'race';
+
+    // Adventure days are not part of the numbered race series, so the hero
+    // label names the event type instead of a race number.
+    const eventLabel = isRace
+        ? `${isActive ? 'Race Day' : 'Next Race'} — Race #${race.raceNumber}`
+        : `${isActive ? 'Event Day' : 'Next Event'} — Adventure Day`;
+    const conferenceLabel = CONFERENCE_LABELS[race.conference];
 
     container.innerHTML = `
         <div class="hero${pastClass}">
-            <div class="hero__label">${isActive ? 'Race Day' : 'Next Race'} — Race #${race.id}</div>
+            <div class="hero__label">${eventLabel} — ${conferenceLabel}</div>
             <div class="hero__race-name">${race.name}</div>
             <div class="hero__venue">${race.venue} — ${race.city}, ${race.state}</div>
             <div class="hero__dates">${formatRaceDates(race)}</div>

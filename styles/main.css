@@ -983,6 +983,16 @@
     justify-content: center;
 }
 
+.race-card__number--adventure {
+    /* Adventure days aren't part of the numbered race series, so they
+       read as a muted outline rather than a filled accent circle. */
+    background: transparent;
+    color: var(--color-text-secondary);
+    border: 1px solid var(--color-border);
+    font-size: 0.5rem;
+    letter-spacing: 0.02em;
+}
+
 .race-card__badge {
     font-size: 0.55rem;
     font-weight: 700;
@@ -1032,6 +1042,25 @@
     font-size: 0.6rem;
     color: var(--color-text-muted);
     margin-top: var(--space-2xs);
+}
+
+.race-card__conf {
+    display: inline-block;
+    font-size: 0.55rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 1px 5px;
+    margin-right: var(--space-xs);
+    border-radius: 6px;
+    background: var(--color-bg);
+    color: var(--color-text-secondary);
+    border: 1px solid var(--color-border);
+}
+.race-card__conf--all {
+    color: var(--color-accent);
+    border-color: var(--tint-accent-border);
+    background: var(--tint-accent);
 }
 
 .race-card__status {
